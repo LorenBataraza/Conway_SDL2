@@ -2,10 +2,6 @@
 #include <SDL2/SDL.h>
 #include <ctime>
 
-#define CLAY_IMPLEMENTATION
-#include "./clay/clay.h"
-#include "./clay/clay_renderer_SDL2.c"
-
 #include "grid.cpp"
 #include "dotted_line.cpp"
 
