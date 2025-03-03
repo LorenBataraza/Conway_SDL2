@@ -2,6 +2,10 @@
 #include <SDL2/SDL.h>
 #include <ctime>
 
+#define CLAY_IMPLEMENTATION
+#include "./clay/clay.h"
+#include "./clay/clay_renderer_SDL2.c"
+
 #include "grid.cpp"
 #include "dotted_line.cpp"
 
@@ -23,17 +27,11 @@ double frecuencia=1;
 time_t start_time;
 
 
-int main(int argc, char** args) {
 
+
+int main(int argc, char** args) {
 	if ( !init() ) return 1;
 
-	// Condición inicial
-		for(int j=0; j<cols; j++){
-			grid[0][j]=true;
-			grid[2][j]=true;
-			grid[3][j]=true;
-	}
-	
 	while ( loop() ) {
 		// wait before processing the next frame
 		SDL_Delay(10); 
@@ -110,20 +108,18 @@ bool loop() {
  
 	
 	// Grilla 
-	// Dibujo lineas verticales
 	for (size_t i = 0; i < rows-1; i++){
 		int x = current_width * (i + 1) / rows;
 		DrawDottedLine(renderer, x, 0, x, current_height);
 	}
-	// Dibujo líneas horizontales
 	for (size_t i = 0; i < cols - 1; i++) {
 		int y = current_height * (i + 1) / cols;
 		DrawDottedLine(renderer, 0, y, current_width, y);
 	}
 
 
-	SDL_SetRenderDrawColor( renderer, 255, 255, 255, 200);
 	// Recuados vivos
+	SDL_SetRenderDrawColor( renderer, 255, 255, 255, 200);
 	for (size_t i = 0; i < cols; i++){
 		int y = current_height *i  / rows;
 			for (size_t j = 0; j < rows ; j++) {
@@ -165,6 +161,8 @@ bool init() {
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 	SDL_SetRenderDrawColor( renderer, 255, 255, 255, 255 );	
 	SDL_RenderClear( renderer );
+
+	loadGridFromTXT(grid, rows, cols, "lastSave.txt");
 	return true;
 }
 
