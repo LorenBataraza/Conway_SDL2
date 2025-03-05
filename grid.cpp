@@ -1,7 +1,17 @@
 #include <fstream>
 #include <iostream>
+#include <SDL2/SDL_ttf.h>
+
+#include "dotted_line.cpp"
 
 using namespace std;
+
+typedef struct {
+    float center_x, center_y;
+    float zoom;
+} viewpoint;
+
+bool show_numbers=false;
 
 // Constructors
 // Emplty Grid
@@ -26,12 +36,13 @@ void fill_grid(bool** grid_to_fill, bool* given_grid, int rows,int cols){
 	}
 }
 
+/*
 bool** construct_grid(bool* InitCond, int rows,int col){
     bool** contructed_grid = construct_grid(rows, col);
     fill_grid(contructed_grid, InitCond, rows, col );
     return contructed_grid;
 }
-
+*/
 
 // Free memory
 void destructor_grid(bool** grid, int rows,int col){
@@ -42,9 +53,24 @@ void destructor_grid(bool** grid, int rows,int col){
 }
 
 // Actions on Grid 
-void turnCell_withMemory(bool ** grid, int row, int col ){
+void turnCell_withMemory(SDL_Window* window, bool ** grid, viewpoint vp ,int x , int y, int rows, int cols){
     static int last_row = -1;
     static int last_col = -1;
+
+    float x_min = max(0.0f,(vp.center_x - vp.zoom*0.5f)*cols);
+    float y_min = max(0.0f,(vp.center_y - vp.zoom*0.5f)*rows);
+    float x_max = min((float) cols, (vp.center_x + vp.zoom*0.5f)*cols);
+    float y_max = min((float) rows, (vp.center_y + vp.zoom*0.5f)*rows);
+
+    // cout << x_min << " " << y_min << endl;
+
+    int current_width, current_height;
+    SDL_GetWindowSize(window, &current_width, &current_height);
+
+    int col = x_min + x*1.0*(x_max-x_min)/current_width;
+    int row = y_min + y*1.0*(y_max-y_min)/current_height;
+    
+    // cout << "r: " << x*1.0*(x_max-x_min)/current_width << " c: "<<y*1.0*(y_max-y_min)/current_height << endl;
 
     if(row== last_row && col==last_col)return;
 
@@ -163,4 +189,100 @@ void loadGridFromTXT(bool** grid, int rows, int cols, const string& filename) {
             grid[i][j] = (bool) val; 
         }
     }
+}
+
+
+// Print
+void print_grid(
+    SDL_Window* window,
+    SDL_Renderer* renderer,
+    bool ** grid,
+    viewpoint vp,
+    int rows, 
+    int cols,
+    TTF_Font* font
+    ){
+        // Dimensions of current viewpoint
+        // Handles points outside frame
+        float x_min = max(0.0f,(vp.center_x - vp.zoom*0.5f)*cols);
+        float y_min = max(0.0f,(vp.center_y - vp.zoom*0.5f)*rows);
+        float x_max = min((float) cols, (vp.center_x + vp.zoom*0.5f)*cols);
+        float y_max = min((float) rows, (vp.center_y + vp.zoom*0.5f)*rows);    
+        
+        // Determine squares to evaluate 
+        int min_row = y_min;
+        int max_row = y_max;
+        int min_col = x_min;
+        int max_col = x_max;
+        
+        int delta_rows = max_row-min_row;
+        int delta_cols = max_col-min_col;
+
+        // Debug 
+        // cout << viewpoint.center_x << " "<< viewpoint.center_y << " " <<viewpoint.zoom << endl;
+        // cout << x_min << " "<< x_max << " "<< y_min << " " << y_max << endl;
+        //cout << min_row << " "<< max_row << " "<< min_col << " " << max_col << endl;
+        
+        int current_width, current_height;
+        SDL_GetWindowSize(window, &current_width, &current_height);
+
+        SDL_SetRenderDrawColor( renderer, 255, 255, 255, 50 );
+
+        float x_offset = (x_min - (int)x_min) * (current_width / (max_col - min_col));
+        float y_offset = (y_min - (int)y_min) * (current_height / (max_row - min_row));
+
+        for (size_t i = 0; i < delta_rows; i++) {
+            float x = (x_offset + (i * current_width / delta_rows));
+            DrawDottedLine(renderer, x, 0, x, current_height);
+        }
+        
+        for (size_t i = 0; i < delta_cols; i++) {
+            float y = (y_offset + (i * current_height / delta_cols));
+            DrawDottedLine(renderer, 0, y, current_width, y);
+        }
+        
+        // Agrego pad para que quede bien la grilla
+        int rectangle_pad =1;
+        int rectangle_width_padded = (current_width/ (max_col-min_col))-2*rectangle_pad;
+        int rectangle_height_padded = (current_height/ (max_row-min_row))-2*rectangle_pad;
+
+        // A diferencia de las lineas para estos si tengo que imprimir los que están afuera de la pantalla
+    
+        SDL_SetRenderDrawColor( renderer, 255, 255, 255, 200);
+        for (size_t i = 0; i < delta_cols; i++) {
+            float y = (y_offset + (i * current_height / delta_cols));
+            for (size_t j = 0; j < delta_rows; j++) {
+                float x = (x_offset + (j * current_width / delta_rows));
+                if (grid[i + min_row][j + min_col]) {
+                    SDL_FRect rect = {x + rectangle_pad, y + rectangle_pad, (float)rectangle_width_padded, (float)rectangle_height_padded};
+                    SDL_RenderFillRectF(renderer, &rect);
+        
+                    if (show_numbers) {
+                        SDL_Surface* text = TTF_RenderText_Solid(font, ("(" + std::to_string(i + min_row) + ", " + std::to_string(j + min_col) + ")").c_str(), {0, 0, 0, 0});
+                        SDL_Texture* text_texture = SDL_CreateTextureFromSurface(renderer, text);
+                        SDL_RenderCopyF(renderer, text_texture, NULL, &rect);
+                    }
+                }
+            }
+        }
+        
+}
+
+
+void zoomOut(viewpoint* vp, float x , float y){
+    // New center on the middle point between the 
+    // previous center and the mouse 
+    vp->center_x = vp->center_x - (x-0.5f)*vp->zoom;
+    vp->center_y = vp->center_y - (x-0.5f)*vp->zoom;
+
+    vp->zoom = min(vp->zoom*1.5f, 1.0f);
+    
+}
+
+void zoomIn(viewpoint* vp, float x , float y){
+    // Same as zoomOut
+    vp->center_x = vp->center_x + (x-0.5f)*vp->zoom;
+    vp->center_y = vp->center_y + (x-0.5f)*vp->zoom;
+
+    vp->zoom = max(vp->zoom*0.5f, 0.1f);
 }

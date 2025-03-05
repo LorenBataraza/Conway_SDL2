@@ -1,29 +1,37 @@
 #include <iostream>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_opengl.h>
+
 #include <ctime>
 
 #include "grid.cpp"
-#include "dotted_line.cpp"
 
 using namespace std;
+
 
 bool init();
 void kill();
 bool loop();
 
-// Pointers to our window and renderer
+
+// Main pointers
 SDL_Window* window;
 SDL_Renderer* renderer;
+TTF_Font* font;
 
-// Creo la grilla del mundo
-int rows=20, cols=20;
+viewpoint vp = {
+	.center_x = 0.50f,
+	.center_y = 0.50f,
+	.zoom = 0.2f
+};
+bool run_sim = true;
+int rows=100, cols=100;
+
 bool** grid = construct_grid(rows, cols);
 double frecuencia=1;
 
 time_t start_time;
-
-
-
 
 int main(int argc, char** args) {
 	if ( !init() ) return 1;
@@ -32,7 +40,6 @@ int main(int argc, char** args) {
 		// wait before processing the next frame
 		SDL_Delay(10); 
 	}
-
 	kill();
 	return 0;
 }
@@ -40,10 +47,10 @@ int main(int argc, char** args) {
 bool loop() {
 	static const unsigned char* keys = SDL_GetKeyboardState( NULL );
 	SDL_Event e;
-	SDL_Rect r;
 	
 	// For mouse rectangle (static to presist between function calls)
 	static int mx0 = -1, my0 = -1, mx1 = -1, my1 = -1;
+
 	int current_width, current_height;
 	SDL_GetWindowSize(window, &current_width, &current_height);
 	
@@ -60,17 +67,17 @@ bool loop() {
 			case SDL_QUIT:
 				return false;
 			case SDL_MOUSEBUTTONDOWN:
-				mx0 = e.button.x;
-				my0 = e.button.y;
-				turnCell_withMemory(grid,e.button.y/rectangle_height, e.button.x/rectangle_width);
-				break;
+			turnCell_withMemory(window, grid, vp, e.button.x, e.button.y, rows, cols);
+			break;
 			case SDL_MOUSEMOTION:
-				mx1 = e.button.x;
-				my1 = e.button.y;
-				if(e.motion.state==SDL_PRESSED)turnCell_withMemory(grid,e.button.y/rectangle_height, e.button.x/rectangle_width);
+				if(e.motion.state==SDL_PRESSED)turnCell_withMemory(window, grid, vp, e.button.x, e.button.y, rows, cols);
 				break;
 			case SDL_MOUSEBUTTONUP:
 				mx0 = my0 = mx1 = my1 = -1;
+				break;
+			case SDL_MOUSEWHEEL:
+				(e.wheel.y==1)? zoomIn(&vp, (float) e.wheel.mouseX/current_width, (float) e.wheel.mouseY/current_height):zoomOut(&vp, (float) e.wheel.mouseX/current_width, (float) e.wheel.mouseY/current_height );
+				// cout<< vp.zoom << "\t" <<vp.center_x << "\t" <<vp.center_y << endl;
 				break;
 			case SDL_KEYDOWN:
 				switch ( e.key.keysym.sym ) {
@@ -90,40 +97,19 @@ bool loop() {
 		}
 	}
 
-	double elapsed_time = difftime(time(nullptr), start_time);
-	if(elapsed_time>= 1/frecuencia){
-		std::cout << "Acción ejecutada en t = " << elapsed_time << " segundos." << std::endl;
-		update_grid(grid, rows, cols);
-		start_time = time(nullptr);
-	}
-	
-	// Clear the window to white
-	SDL_SetRenderDrawColor( renderer, 24, 24, 24, 255 );
-	SDL_RenderClear( renderer );
-	SDL_SetRenderDrawColor( renderer, 255, 255, 255, 50 );
- 
-	
-	// Grilla 
-	for (size_t i = 0; i < rows-1; i++){
-		int x = current_width * (i + 1) / rows;
-		DrawDottedLine(renderer, x, 0, x, current_height);
-	}
-	for (size_t i = 0; i < cols - 1; i++) {
-		int y = current_height * (i + 1) / cols;
-		DrawDottedLine(renderer, 0, y, current_width, y);
-	}
-
-
-	// Recuados vivos
-	SDL_SetRenderDrawColor( renderer, 255, 255, 255, 200);
-	for (size_t i = 0; i < cols; i++){
-		int y = current_height *i  / rows;
-			for (size_t j = 0; j < rows ; j++) {
-				int x = current_width * j/ cols;
-				SDL_Rect rect = {x+ rectangle_pad, y+ rectangle_pad, rectangle_width_padded, rectangle_height_padded};
-				if(grid[i][j])SDL_RenderFillRect(renderer, &rect);
+	if(run_sim){
+		double elapsed_time = difftime(time(nullptr), start_time);
+		if(elapsed_time>= 1/frecuencia){
+			std::cout << "Acción ejecutada en t = " << elapsed_time << " segundos." << std::endl;
+			update_grid(grid, rows, cols);
+			start_time = time(nullptr);
 		}
 	}
+	
+	SDL_SetRenderDrawColor( renderer, 24, 24, 24, 255 );
+	SDL_RenderClear( renderer );
+ 
+	print_grid(window, renderer, grid, vp, rows, cols, font);
 
 	// Update window	
 	SDL_RenderPresent( renderer );
@@ -147,6 +133,9 @@ bool init() {
 		system("pause");
 		return false;
 	}
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
 	renderer = SDL_CreateRenderer( window, -1, SDL_RENDERER_ACCELERATED );
 	if ( !renderer ) {
@@ -154,11 +143,24 @@ bool init() {
 		return false;
 	}
 
+	if ( TTF_Init() < 0 ) {
+		cout << "Error intializing SDL_ttf: " << TTF_GetError() << endl;
+		return false;
+	}
+
+	// Load font
+	font = TTF_OpenFont("Roboto-Regular.ttf", 72);
+	if ( !font ) {
+		cout << "Error loading font: " << TTF_GetError() << endl;
+		return false;
+	}
+	
+
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 	SDL_SetRenderDrawColor( renderer, 255, 255, 255, 255 );	
 	SDL_RenderClear( renderer );
 
-	loadGridFromTXT(grid, rows, cols, "lastSave.txt");
+	// loadGridFromTXT(grid, rows, cols, "lastSave.txt");
 	return true;
 }
 
@@ -169,5 +171,6 @@ void kill() {
 	SDL_DestroyWindow( window );
 	SDL_Quit();
 }
+
 
 
