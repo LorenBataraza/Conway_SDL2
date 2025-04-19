@@ -1,0 +1,5 @@
+/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/imgui.dir
+/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/Graphics.dir
+/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/life_game.dir
+/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/edit_cache.dir
+/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/rebuild_cache.dir

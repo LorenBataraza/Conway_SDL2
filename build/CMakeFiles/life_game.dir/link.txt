@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/life_game.dir/scr/main.cpp.o -o life_game  -Wl,-rpath,/home/lorenzo/Desktop/Proyectos/Conway_life_game/build libimgui.a libGraphics.so -lSDL2 -lSDL2_ttf -lSDL2 -lm -ldl -lpthread libimgui.a -lSDL2_ttf 
