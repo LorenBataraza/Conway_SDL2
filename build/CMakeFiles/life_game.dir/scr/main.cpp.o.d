@@ -291,14 +291,24 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: \
  /usr/include/SDL2/SDL_system.h /usr/include/SDL2/SDL_timer.h \
  /usr/include/SDL2/SDL_version.h /usr/include/SDL2/SDL_locale.h \
  /usr/include/SDL2/SDL_misc.h /usr/include/SDL2/SDL_ttf.h \
- /usr/include/SDL2/SDL.h \
+ /usr/include/SDL2/SDL.h /usr/include/SDL2/SDL_image.h \
  /home/lorenzo/Desktop/Proyectos/Conway_life_game/includes/imgui/imgui.h \
  /home/lorenzo/Desktop/Proyectos/Conway_life_game/includes/imgui/imconfig.h \
  /usr/include/assert.h \
  /home/lorenzo/Desktop/Proyectos/Conway_life_game/includes/imgui/imgui_impl_sdl2.h \
  /home/lorenzo/Desktop/Proyectos/Conway_life_game/includes/imgui/imgui_impl_sdlrenderer2.h \
+ /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/appState.h \
+ /usr/include/c++/12/vector /usr/include/c++/12/bits/stl_uninitialized.h \
+ /usr/include/c++/12/bits/stl_vector.h \
+ /usr/include/c++/12/bits/stl_bvector.h \
+ /usr/include/c++/12/bits/vector.tcc /usr/include/c++/12/unordered_map \
+ /usr/include/c++/12/ext/aligned_buffer.h \
+ /usr/include/c++/12/bits/hashtable.h \
+ /usr/include/c++/12/bits/hashtable_policy.h /usr/include/c++/12/tuple \
+ /usr/include/c++/12/bits/uses_allocator.h \
+ /usr/include/c++/12/bits/enable_special_members.h \
+ /usr/include/c++/12/bits/node_handle.h \
+ /usr/include/c++/12/bits/unordered_map.h \
+ /usr/include/c++/12/bits/erase_if.h \
  /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/grid.h \
- /usr/include/c++/12/fstream /usr/include/c++/12/bits/codecvt.h \
- /usr/include/x86_64-linux-gnu/c++/12/bits/basic_file.h \
- /usr/include/x86_64-linux-gnu/c++/12/bits/c++io.h \
- /usr/include/c++/12/bits/fstream.tcc
+ /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/main_menu.cpp

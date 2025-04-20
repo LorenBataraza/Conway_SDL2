@@ -371,29 +371,29 @@ scr/main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/life_game.dir/build.make CMakeFiles/life_game.dir/scr/main.cpp.s
 .PHONY : scr/main.cpp.s
 
-scr/ui.o: scr/ui.cpp.o
-.PHONY : scr/ui.o
+scr/main_menu.o: scr/main_menu.cpp.o
+.PHONY : scr/main_menu.o
 
 # target to build an object file
-scr/ui.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Graphics.dir/build.make CMakeFiles/Graphics.dir/scr/ui.cpp.o
-.PHONY : scr/ui.cpp.o
+scr/main_menu.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Graphics.dir/build.make CMakeFiles/Graphics.dir/scr/main_menu.cpp.o
+.PHONY : scr/main_menu.cpp.o
 
-scr/ui.i: scr/ui.cpp.i
-.PHONY : scr/ui.i
+scr/main_menu.i: scr/main_menu.cpp.i
+.PHONY : scr/main_menu.i
 
 # target to preprocess a source file
-scr/ui.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Graphics.dir/build.make CMakeFiles/Graphics.dir/scr/ui.cpp.i
-.PHONY : scr/ui.cpp.i
+scr/main_menu.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Graphics.dir/build.make CMakeFiles/Graphics.dir/scr/main_menu.cpp.i
+.PHONY : scr/main_menu.cpp.i
 
-scr/ui.s: scr/ui.cpp.s
-.PHONY : scr/ui.s
+scr/main_menu.s: scr/main_menu.cpp.s
+.PHONY : scr/main_menu.s
 
 # target to generate assembly for a file
-scr/ui.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Graphics.dir/build.make CMakeFiles/Graphics.dir/scr/ui.cpp.s
-.PHONY : scr/ui.cpp.s
+scr/main_menu.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Graphics.dir/build.make CMakeFiles/Graphics.dir/scr/main_menu.cpp.s
+.PHONY : scr/main_menu.cpp.s
 
 # Help Target
 help:
@@ -433,9 +433,9 @@ help:
 	@echo "... scr/main.o"
 	@echo "... scr/main.i"
 	@echo "... scr/main.s"
-	@echo "... scr/ui.o"
-	@echo "... scr/ui.i"
-	@echo "... scr/ui.s"
+	@echo "... scr/main_menu.o"
+	@echo "... scr/main_menu.i"
+	@echo "... scr/main_menu.s"
 .PHONY : help
 
 

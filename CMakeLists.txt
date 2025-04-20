@@ -4,10 +4,11 @@ project(ConwayLife VERSION 0.2.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Usar pkg-config para encontrar SDL2 (más confiable en Linux)
+# Buscar paquetes SDL2
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL2 REQUIRED sdl2)
 pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
+pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)  # <-- Añadir SDL2_image
 
 add_library(imgui STATIC
     includes/imgui/imgui.cpp
@@ -18,60 +19,51 @@ add_library(imgui STATIC
     includes/imgui/imgui_tables.cpp
 )
 
+set_property(TARGET imgui PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-set_property(TARGET imgui PROPERTY POSITION_INDEPENDENT_CODE ON)  # Solución PIC
-
-add_library(Graphics SHARED
-    scr/grid.cpp
-    scr/dotted_line.cpp
-    scr/ui.cpp
-)
-
-target_link_libraries(Graphics
-    ${SDL2_LIBRARIES}
-    ${SDL2_TTF_LIBRARIES}
-    imgui
-)
-
-
-# Directorios de include para ImGui
+# Añadir SDL2_image a los includes
 target_include_directories(imgui PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/includes
     ${CMAKE_CURRENT_SOURCE_DIR}/includes/imgui
     ${SDL2_INCLUDE_DIRS}
+    ${SDL2_IMAGE_INCLUDE_DIRS}  
 )
 
+add_library(Graphics SHARED
+    scr/grid.cpp
+    scr/dotted_line.cpp
+    scr/main_menu.cpp
+)
 
-# Ejecutable principal
+# Enlazar SDL2_image a la librería Graphics
+target_link_libraries(Graphics
+    ${SDL2_LIBRARIES}
+    ${SDL2_TTF_LIBRARIES}
+    ${SDL2_IMAGE_LIBRARIES}  
+    imgui
+)
+
+# Configuración para el ejecutable
 add_executable(life_game
     scr/main.cpp
 )
 
-# Directorios de include para el ejecutable
 target_include_directories(life_game PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/includes
     ${CMAKE_CURRENT_SOURCE_DIR}/includes/imgui
     ${SDL2_INCLUDE_DIRS}
+    ${SDL2_IMAGE_INCLUDE_DIRS}  
 )
 
-# Enlazado de librerías
+# Añadir SDL2_image al ejecutable
 target_link_libraries(life_game
     imgui
     Graphics
     ${SDL2_LIBRARIES}
     ${SDL2_TTF_LIBRARIES}
+    ${SDL2_IMAGE_LIBRARIES}  
 )
 
-# Dependencias adicionales para Linux
-if(UNIX AND NOT APPLE)
-    target_link_libraries(life_game
-        m
-        dl
-        pthread
-    )
-endif()
-
-# Mensajes de depuración
-message(STATUS "SDL2 include dirs: ${SDL2_INCLUDE_DIRS}")
-message(STATUS "SDL2 libraries: ${SDL2_LIBRARIES}")
-message(STATUS "SDL2_ttf libraries: ${SDL2_TTF_LIBRARIES}")
+# Mensajes de depuración adicionales
+message(STATUS "SDL2_image include dirs: ${SDL2_IMAGE_INCLUDE_DIRS}")
+message(STATUS "SDL2_image libraries: ${SDL2_IMAGE_LIBRARIES}")

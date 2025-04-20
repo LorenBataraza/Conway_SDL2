@@ -363,24 +363,45 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
   /usr/include/SDL2/SDL_misc.h \
   /usr/include/SDL2/SDL_ttf.h \
   /usr/include/SDL2/SDL.h \
+  /usr/include/SDL2/SDL_image.h \
   /home/lorenzo/Desktop/Proyectos/Conway_life_game/includes/imgui/imgui.h \
   /home/lorenzo/Desktop/Proyectos/Conway_life_game/includes/imgui/imconfig.h \
   /usr/include/assert.h \
   /home/lorenzo/Desktop/Proyectos/Conway_life_game/includes/imgui/imgui_impl_sdl2.h \
   /home/lorenzo/Desktop/Proyectos/Conway_life_game/includes/imgui/imgui_impl_sdlrenderer2.h \
+  /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/appState.h \
+  /usr/include/c++/12/vector \
+  /usr/include/c++/12/bits/stl_uninitialized.h \
+  /usr/include/c++/12/bits/stl_vector.h \
+  /usr/include/c++/12/bits/stl_bvector.h \
+  /usr/include/c++/12/bits/vector.tcc \
+  /usr/include/c++/12/unordered_map \
+  /usr/include/c++/12/ext/aligned_buffer.h \
+  /usr/include/c++/12/bits/hashtable.h \
+  /usr/include/c++/12/bits/hashtable_policy.h \
+  /usr/include/c++/12/tuple \
+  /usr/include/c++/12/bits/uses_allocator.h \
+  /usr/include/c++/12/bits/enable_special_members.h \
+  /usr/include/c++/12/bits/node_handle.h \
+  /usr/include/c++/12/bits/unordered_map.h \
+  /usr/include/c++/12/bits/erase_if.h \
   /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/grid.h \
-  /usr/include/c++/12/fstream \
-  /usr/include/c++/12/bits/codecvt.h \
-  /usr/include/x86_64-linux-gnu/c++/12/bits/basic_file.h \
-  /usr/include/x86_64-linux-gnu/c++/12/bits/c++io.h \
-  /usr/include/c++/12/bits/fstream.tcc
+  /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/main_menu.cpp
 
 
-/usr/include/c++/12/bits/fstream.tcc:
+/home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/main_menu.cpp:
 
-/usr/include/x86_64-linux-gnu/c++/12/bits/c++io.h:
+/usr/include/c++/12/bits/uses_allocator.h:
 
-/usr/include/c++/12/fstream:
+/usr/include/c++/12/bits/hashtable.h:
+
+/usr/include/c++/12/unordered_map:
+
+/usr/include/c++/12/bits/stl_bvector.h:
+
+/usr/include/c++/12/bits/stl_vector.h:
+
+/home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/appState.h:
 
 /home/lorenzo/Desktop/Proyectos/Conway_life_game/includes/imgui/imgui_impl_sdlrenderer2.h:
 
@@ -407,6 +428,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/include/SDL2/SDL_joystick.h:
 
 /usr/include/SDL2/SDL_keycode.h:
+
+/usr/include/c++/12/bits/hashtable_policy.h:
 
 /usr/include/SDL2/SDL_keyboard.h:
 
@@ -443,6 +466,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vbmi2intrin.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vpopcntdqintrin.h:
+
+/usr/include/c++/12/bits/erase_if.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/avx512ifmaintrin.h:
 
@@ -498,6 +523,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/tsxldtrkintrin.h:
 
+/usr/include/c++/12/bits/unordered_map.h:
+
 /usr/lib/gcc/x86_64-linux-gnu/12/include/tbmintrin.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/sgxintrin.h:
@@ -520,8 +547,6 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/c++/12/bits/new_allocator.h:
 
-/usr/include/c++/12/bits/codecvt.h:
-
 /usr/include/c++/12/bits/cpp_type_traits.h:
 
 /usr/include/x86_64-linux-gnu/bits/wordsize.h:
@@ -534,6 +559,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/x86_64-linux-gnu/bits/endian.h:
 
+/usr/include/c++/12/vector:
+
 /usr/include/x86_64-linux-gnu/gnu/stubs.h:
 
 /usr/include/x86_64-linux-gnu/sys/single_threaded.h:
@@ -543,6 +570,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h:
 
 /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h:
+
+/usr/include/c++/12/bits/node_handle.h:
 
 /usr/include/c++/12/ext/atomicity.h:
 
@@ -632,6 +661,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/c++/12/cctype:
 
+/usr/include/c++/12/ext/aligned_buffer.h:
+
 /usr/lib/gcc/x86_64-linux-gnu/12/include/avx5124fmapsintrin.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/avx512cdintrin.h:
@@ -711,6 +742,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/include/SDL2/SDL_locale.h:
 
 /usr/include/x86_64-linux-gnu/c++/12/bits/ctype_base.h:
+
+/usr/include/SDL2/SDL_image.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/stdarg.h:
 
@@ -814,8 +847,6 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/c++/12/type_traits:
 
-/usr/include/x86_64-linux-gnu/c++/12/bits/basic_file.h:
-
 /usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h:
 
 /usr/include/c++/12/bits/stringfwd.h:
@@ -839,6 +870,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/include/c++/12/new:
 
 /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/grid.h:
+
+/usr/include/c++/12/bits/enable_special_members.h:
 
 /usr/include/SDL2/SDL_clipboard.h:
 
@@ -904,6 +937,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/c++/12/bits/alloc_traits.h:
 
+/usr/include/c++/12/tuple:
+
 /usr/include/c++/12/bits/functional_hash.h:
 
 /usr/include/stdio.h:
@@ -915,6 +950,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/include/c++/12/bits/max_size_type.h:
 
 /usr/include/SDL2/SDL_assert.h:
+
+/usr/include/c++/12/bits/vector.tcc:
 
 /usr/include/c++/12/ext/string_conversions.h:
 
@@ -1031,6 +1068,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h:
 
 /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h:
+
+/usr/include/c++/12/bits/stl_uninitialized.h:
 
 /usr/include/SDL2/SDL_rect.h:
 

@@ -97,32 +97,32 @@ CMakeFiles/Graphics.dir/scr/dotted_line.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Graphics.dir/scr/dotted_line.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/dotted_line.cpp -o CMakeFiles/Graphics.dir/scr/dotted_line.cpp.s
 
-CMakeFiles/Graphics.dir/scr/ui.cpp.o: CMakeFiles/Graphics.dir/flags.make
-CMakeFiles/Graphics.dir/scr/ui.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/ui.cpp
-CMakeFiles/Graphics.dir/scr/ui.cpp.o: CMakeFiles/Graphics.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/Graphics.dir/scr/ui.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Graphics.dir/scr/ui.cpp.o -MF CMakeFiles/Graphics.dir/scr/ui.cpp.o.d -o CMakeFiles/Graphics.dir/scr/ui.cpp.o -c /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/ui.cpp
+CMakeFiles/Graphics.dir/scr/main_menu.cpp.o: CMakeFiles/Graphics.dir/flags.make
+CMakeFiles/Graphics.dir/scr/main_menu.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/main_menu.cpp
+CMakeFiles/Graphics.dir/scr/main_menu.cpp.o: CMakeFiles/Graphics.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/Graphics.dir/scr/main_menu.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Graphics.dir/scr/main_menu.cpp.o -MF CMakeFiles/Graphics.dir/scr/main_menu.cpp.o.d -o CMakeFiles/Graphics.dir/scr/main_menu.cpp.o -c /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/main_menu.cpp
 
-CMakeFiles/Graphics.dir/scr/ui.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Graphics.dir/scr/ui.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/ui.cpp > CMakeFiles/Graphics.dir/scr/ui.cpp.i
+CMakeFiles/Graphics.dir/scr/main_menu.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Graphics.dir/scr/main_menu.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/main_menu.cpp > CMakeFiles/Graphics.dir/scr/main_menu.cpp.i
 
-CMakeFiles/Graphics.dir/scr/ui.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Graphics.dir/scr/ui.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/ui.cpp -o CMakeFiles/Graphics.dir/scr/ui.cpp.s
+CMakeFiles/Graphics.dir/scr/main_menu.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Graphics.dir/scr/main_menu.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/main_menu.cpp -o CMakeFiles/Graphics.dir/scr/main_menu.cpp.s
 
 # Object files for target Graphics
 Graphics_OBJECTS = \
 "CMakeFiles/Graphics.dir/scr/grid.cpp.o" \
 "CMakeFiles/Graphics.dir/scr/dotted_line.cpp.o" \
-"CMakeFiles/Graphics.dir/scr/ui.cpp.o"
+"CMakeFiles/Graphics.dir/scr/main_menu.cpp.o"
 
 # External object files for target Graphics
 Graphics_EXTERNAL_OBJECTS =
 
 libGraphics.so: CMakeFiles/Graphics.dir/scr/grid.cpp.o
 libGraphics.so: CMakeFiles/Graphics.dir/scr/dotted_line.cpp.o
-libGraphics.so: CMakeFiles/Graphics.dir/scr/ui.cpp.o
+libGraphics.so: CMakeFiles/Graphics.dir/scr/main_menu.cpp.o
 libGraphics.so: CMakeFiles/Graphics.dir/build.make
 libGraphics.so: libimgui.a
 libGraphics.so: CMakeFiles/Graphics.dir/link.txt

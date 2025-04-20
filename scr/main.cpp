@@ -4,13 +4,15 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_image.h>
 
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_sdlrenderer2.h"
 
+#include "appState.h"
 #include "grid.h"
-// #include "ui.cpp"
+#include "main_menu.cpp"
 
 #if !SDL_VERSION_ATLEAST(2,0,17)
 #error This backend requires SDL 2.0.17+ because of SDL_RenderGeometry() function
@@ -18,13 +20,12 @@
 
 using namespace std;
 
+// Defino variables globales 
 #define FONT_PATH "../includes/Roboto-Regular.ttf"
+
 #define DEBUG_LOOP 0
 #define DEBUG_ZOOM 1
-
-bool init();
-bool loop();
-void kill();
+#define DEBUG_LOAD_ANIMATIONS 0
 
 SDL_Window* window;
 SDL_Renderer* renderer;
@@ -36,13 +37,14 @@ viewpoint vp = {
 	.zoom = 0.2f
 };
 
-int rows=100, cols=100;
-bool run_sim = true;
-
-bool** grid = construct_grid(rows, cols);
-int frecuencia=1;
+// En app_state está mi grid, necesito app_state.rows y COLUMNS
+AppState app_state(ROWS, COLS);
 
 time_t start_time;
+
+bool init();
+bool loop();
+void kill();
 
 int main(int argc, char** args) {
 	if ( !init() ) return 1;
@@ -55,100 +57,88 @@ int main(int argc, char** args) {
 	return 0;
 }
 
-
-bool loop() {
-	int current_width, current_height;
-	SDL_GetWindowSize(window, &current_width, &current_height);
-	static const unsigned char* keys = SDL_GetKeyboardState( NULL );
-
-	// --- UI ---
-    ImGuiIO& io = ImGui::GetIO();
-
-	SDL_Event event;
-
-	// Agrego pad para que quede bien la grilla 
-	int rectangle_pad =1;
-	int rectangle_width = (current_width/ cols);
-	int rectangle_height = (current_height/ rows);
-	int rectangle_width_padded = rectangle_width- rectangle_pad*2;
-	int rectangle_height_padded = rectangle_height - rectangle_pad*2;
-	
-	// Event loop
-	while ( SDL_PollEvent( &event ) != 0 ) {
-		switch ( event.type ) {
-			case SDL_QUIT:
-				return false;
-			case SDL_MOUSEBUTTONDOWN:
-				turnCell_withMemory(window, grid, vp, event.button.x, event.button.y, rows, cols);
-				break;
-			case SDL_MOUSEMOTION:
-				if(event.motion.state==SDL_PRESSED)turnCell_withMemory(window, grid, vp, event.button.x, event.button.y, rows, cols);
-				break;
-			case SDL_MOUSEWHEEL:
-				(event.wheel.y==1)? zoomIn(&vp, (float) event.wheel.mouseX/current_width, (float) event.wheel.mouseY/current_height):zoomOut(&vp, (float) event.wheel.mouseX/current_width, (float) event.wheel.mouseY/current_height );
-				cout<< vp.zoom << "\t" <<vp.center_x << "\t" <<vp.center_y << endl;
-				break;
-			case SDL_KEYDOWN:
-				switch ( event.key.keysym.sym ) {
-					case SDLK_ESCAPE:
-						kill();
-						break;
-					case SDLK_a: 
-						update_grid(grid, rows,cols);
-						break;
-					case SDLK_e:
-						save_grid_txt(grid, rows,cols, "lastSave.txt");
-						break;	
-					case SDLK_l:
-						loadGridFromTXT(grid, rows, cols, "lastSave.txt");
-						break;	
-				}
-		}
-	}
-
-	// Necesito este código para interacción de ImgUI
-	int wheel = 0;
-	int mouseX, mouseY;
-	const int buttons = SDL_GetMouseState(&mouseX, &mouseY);
-	// Setup low-level inputs (e.g. on Win32, GetKeyboardState(), or write to those fields from your Windows message loop handlers, etc.)
-	io.DeltaTime = 1.0f / 60.0f;
-	io.MousePos = ImVec2(static_cast<float>(mouseX), static_cast<float>(mouseY));
-	io.MouseDown[0] = buttons & SDL_BUTTON(SDL_BUTTON_LEFT);
-	io.MouseDown[1] = buttons & SDL_BUTTON(SDL_BUTTON_RIGHT);
-	io.MouseWheel = static_cast<float>(wheel);
-	
-	
-
-	ImGui_ImplSDL2_NewFrame();    
-	ImGui_ImplSDLRenderer2_NewFrame();
-	ImGui::NewFrame();
-	ImGui::Begin("Parámetros");
-	ImGui::Checkbox("Run", &run_sim);
-	ImGui::DragInt("Hz", &frecuencia, 1, 1, 10, "%d", ImGuiSliderFlags_AlwaysClamp);
-	ImGui::End();
-
-	
-
-	if(run_sim){
-		double elapsed_time = difftime(time(nullptr), start_time);
-		if(elapsed_time>= 1/frecuencia){
-			if(DEBUG_LOOP)std::cout << "Acción ejecutada en t = " << elapsed_time << " segundos." << std::endl;
-			update_grid(grid, rows, cols);
-			start_time = time(nullptr);
-		}
-	}
-	
-	// Renderizado
-	SDL_SetRenderDrawColor( renderer, 24, 24, 24, 255 ); 	 
-	SDL_RenderClear( renderer );						 		// Limpia la pantalla
-	SDL_RenderSetScale(renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
-	ImGui::Render();											// Renderiza Imgui
-	print_grid(window, renderer, grid, vp, rows, cols, font);	// Imprime Grilla 
-	ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer);
-	SDL_RenderPresent( renderer );								//Imprime todo por SDL2
-
-	return true;
+// Funciones auxiliares
+SDL_Texture* load_texture(const std::string& path) {
+    SDL_Surface* surface = IMG_Load(path.c_str());
+    if (!surface) {
+        std::cerr << "Error cargando textura: " << IMG_GetError() << std::endl;
+        return nullptr;
+    }
+    
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+    return tex;
 }
+
+Animation load_gif(const std::string& path, SDL_Renderer* renderer) {
+    Animation anim;
+    IMG_Animation* gif = IMG_LoadAnimation(path.c_str());
+    
+    if (!gif || !renderer) {
+        std::cerr << "Error cargando GIF: " << IMG_GetError() << "\n";
+        return anim;
+    }
+
+    // 1. Almacenar metadatos del GIF
+    anim.width = gif->w;        // Ancho del GIF
+    anim.height = gif->h;       // Alto del GIF
+    anim.frame_count = gif->count;
+    anim.total_duration = 0;    // Duración total de la animación
+
+    // 2. Reservar memoria para frames y delays
+    anim.frames = new SDL_Texture*[anim.frame_count];
+    anim.delays = new Uint32[anim.frame_count];  // Array de delays individuales
+
+    // 3. Cargar cada frame con su delay correspondiente
+    for (int i = 0; i < anim.frame_count; ++i) {
+        // 3a. Convertir surface a textura
+        anim.frames[i] = SDL_CreateTextureFromSurface(renderer, gif->frames[i]);
+        
+		if (!gif->frames[i]) {
+			std::cerr << "Error: Frame " << i << " es NULL en " << path << "\n";
+			continue;
+		}
+		
+		anim.frames[i] = SDL_CreateTextureFromSurface(renderer, gif->frames[i]);
+		if (!anim.frames[i]) {
+			std::cerr << "Error creando textura: " << SDL_GetError() << "\n";
+		}
+
+        // 3c. Almacenar delay específico del frame (en milisegundos)
+        anim.delays[i] = gif->delays[i];  
+        anim.total_duration += anim.delays[i];
+    }
+
+    // 4. Configurar valores iniciales
+    anim.current_frame = 0;
+    anim.last_update = SDL_GetTicks();
+    anim.loop_count = 0;  // Contador de loops completados
+
+    // 5. Liberar recursos de SDL
+    IMG_FreeAnimation(gif);
+    
+    return anim;
+}
+
+
+ImGuiKey SDL_ScancodeToImGuiKey(SDL_Scancode scancode) {
+    // Mapeo directo para teclas comunes (extiende según necesites)
+    switch (scancode) {
+        case SDL_SCANCODE_A: return ImGuiKey_A;
+        case SDL_SCANCODE_E: return ImGuiKey_E;
+        case SDL_SCANCODE_L: return ImGuiKey_L;
+        case SDL_SCANCODE_ESCAPE: return ImGuiKey_Escape;
+        case SDL_SCANCODE_LCTRL: return ImGuiKey_LeftCtrl;
+        case SDL_SCANCODE_RCTRL: return ImGuiKey_RightCtrl;
+        case SDL_SCANCODE_LSHIFT: return ImGuiKey_LeftShift;
+        case SDL_SCANCODE_RSHIFT: return ImGuiKey_RightShift;
+        case SDL_SCANCODE_LALT: return ImGuiKey_LeftAlt;
+        case SDL_SCANCODE_RALT: return ImGuiKey_RightAlt;
+        default: return ImGuiKey_None;
+    }
+}
+
+
 
 bool init() {
 	start_time = time(nullptr);
@@ -210,15 +200,360 @@ bool init() {
 		std::cerr << "Error cargando la fuente para ImGui!" << std::endl;
 		return false;
 	}
+
+	// CARGO TEXTURAS
+	// IMAGENES 
+	app_state.patterns["beehive"] = load_texture("../includes/img/still_life/beehive.png");
+	app_state.patterns["boat"] = load_texture("../includes/img/still_life/boat.png");
+	app_state.patterns["block"] = load_texture("../includes/img/still_life/block.png");
+	app_state.patterns["flower"] = load_texture("../includes/img/still_life/flower.png");
+	app_state.patterns["loaf"] = load_texture("../includes/img/still_life/loaf.png");
+
+	// Oscillators 
+	app_state.animations["beacon"] = std::move(load_gif("../includes/img/oscillators/beacon.gif", renderer));
+	app_state.animations["blinker"] = std::move(load_gif("../includes/img/oscillators/blinker.gif", renderer));
+	app_state.animations["toad"] = std::move(load_gif("../includes/img/oscillators/toad.gif", renderer));
+	app_state.animations["pulsar"] = std::move(load_gif("../includes/img/oscillators/pulsar.gif", renderer));
+
+	// Spaceships
+	app_state.animations["glider"] = std::move(load_gif("../includes/img/spaceships/glider.gif", renderer));
+	app_state.animations["lwss"] = std::move(load_gif("../includes/img/spaceships/lwss.gif", renderer));
+	app_state.animations["mwss"] = std::move(load_gif("../includes/img/spaceships/mwss.gif", renderer));
+	app_state.animations["hwss"] = std::move(load_gif("../includes/img/spaceships/hwss.gif", renderer));
+
+	// Guns
+	app_state.animations["glider_gun"] = std::move(load_gif("../includes/img/guns/glider_gun.gif", renderer));
+
+
+	// DBUG
+	if(DEBUG_LOAD_ANIMATIONS){
+		for (const auto& [name, anim] : app_state.animations) {
+			std::cout << "Cargado GIF: " << name 
+			<< "\nFrames: " << anim.frame_count
+			<< "\n Current Frame "<<anim.current_frame <<" \n";
+
+			for(int i=0; i<anim.frame_count; i++){
+					std::cout << i <<" frame ptr: "<< anim.frames[i]<< "\n";
+				};
+		}
+	}
+	return true;
+}
+
+void update_animation(Animation& anim) {
+    Uint32 now = SDL_GetTicks();
+    Uint32 elapsed = now - anim.last_update;
+
+    // Avanzar frame solo si ha pasado el delay requerido
+    if (elapsed >= anim.delays[anim.current_frame]) {
+        anim.current_frame = (anim.current_frame + 1) % anim.frame_count;
+        anim.last_update = now;
+        
+        // Contar loops completados
+        if (anim.current_frame == 0) anim.loop_count++;
+    }
+}
+
+bool loop() {
+	int current_width, current_height;
+	SDL_GetWindowSize(window, &current_width, &current_height);
+	static const unsigned char* keys = SDL_GetKeyboardState( NULL );
+
+	///////// RENDERIZADO 
+    static ImGuiIO& io = ImGui::GetIO();
+    std::vector<SDL_Event> events;
+    SDL_Event event;
+
+    // 1. Recolectar todos los eventos
+    while (SDL_PollEvent(&event)) {
+        events.push_back(event);
+    }
+
+    // 2. Actualizar estado de ImGui con los eventos
+    for (auto& ev : events) {
+        // Mouse
+        switch (ev.type) {
+            case SDL_MOUSEMOTION:
+                io.MousePos = ImVec2(ev.motion.x, ev.motion.y);
+                break;
+            case SDL_MOUSEBUTTONDOWN:
+            case SDL_MOUSEBUTTONUP: {
+                int button = -1;
+                if (ev.button.button == SDL_BUTTON_LEFT) button = 0;
+                else if (ev.button.button == SDL_BUTTON_RIGHT) button = 1;
+                if (button != -1) {
+                    io.MouseDown[button] = (ev.type == SDL_MOUSEBUTTONDOWN);
+                }
+                break;
+            }
+            case SDL_MOUSEWHEEL:
+                io.MouseWheel = ev.wheel.y;
+                break;
+            
+				
+            // Teclado
+			case SDL_KEYDOWN:
+			case SDL_KEYUP: {
+				SDL_Scancode scancode = ev.key.keysym.scancode;
+				ImGuiKey key = SDL_ScancodeToImGuiKey(scancode);
+				if (key != ImGuiKey_None) {
+					io.AddKeyEvent(key, (ev.type == SDL_KEYDOWN));
+				}
 	
+				// Actualizar modificadores
+				io.AddKeyEvent(ImGuiKey_ModCtrl, (SDL_GetModState() & KMOD_CTRL) != 0);
+				io.AddKeyEvent(ImGuiKey_ModShift, (SDL_GetModState() & KMOD_SHIFT) != 0);
+				io.AddKeyEvent(ImGuiKey_ModAlt, (SDL_GetModState() & KMOD_ALT) != 0);
+				break;
+			}
+        }
+    }
+
+
+    // 4. Manejar eventos de la aplicación (solo si ImGui no los está usando)
+    for (auto& ev : events) {
+        bool skipEvent = false;
+        
+        // Determinar si el evento debe ser manejado por la aplicación
+        switch (ev.type) {
+            case SDL_MOUSEBUTTONDOWN:
+            case SDL_MOUSEMOTION:
+            case SDL_MOUSEWHEEL:
+                skipEvent = io.WantCaptureMouse;
+                break;
+            
+            case SDL_KEYDOWN:
+                skipEvent = io.WantCaptureKeyboard;
+                break;
+        }
+
+        if (skipEvent) continue;
+
+        // Manejar eventos específicos de la aplicación
+        switch (ev.type) {
+            case SDL_QUIT:
+                return false;
+
+            case SDL_MOUSEBUTTONDOWN:
+				load_pattern_into_grid(app_state.current_pattern, window, app_state.grid, vp, ev.button.x, ev.button.y, app_state.rows, app_state.cols);
+                break;
+			/*
+            case SDL_MOUSEMOTION:
+                if(ev.motion.state == SDL_PRESSED) {
+                    load_pattern_into_grid(app_state.current_pattern, window, grid, vp, ev.button.x, ev.button.y, app_state.rows, app_state.cols);
+                }
+                break;
+			*/
+			case SDL_MOUSEWHEEL: {
+				int mouseX, mouseY;
+				SDL_GetMouseState(&mouseX, &mouseY);
+				float relX = mouseX / static_cast<float>(current_width);
+				float relY = mouseY / static_cast<float>(current_height);
+				
+				if (event.wheel.y > 0) {
+					zoomIn(&vp, relX, relY, app_state.rows, app_state.cols);
+				} else {
+					zoomOut(&vp, relX, relY, app_state.rows, app_state.cols);
+				}
+				break;
+			}
+
+            case SDL_KEYDOWN:
+                switch (ev.key.keysym.sym) {
+                    case SDLK_ESCAPE:
+                        kill();
+                        break;
+                    case SDLK_a: 
+                        update_grid(app_state.grid, app_state.rows, app_state.cols);
+                        break;
+                    case SDLK_e:
+                        save_grid_txt(app_state.grid, app_state.rows, app_state.cols, "lastSave.txt");
+                        break;    
+                    case SDLK_l:
+                        loadGridFromTXT(app_state.grid, app_state.rows, app_state.cols, "lastSave.txt");
+                        break;
+                }
+                break;
+        }
+    }
+	
+	if(app_state.run_sim){
+		double elapsed_time = difftime(time(nullptr), start_time);
+		if(elapsed_time>= 1/app_state.frecuencia){
+			if(DEBUG_LOOP)std::cout << "Acción ejecutada en t = " << elapsed_time << " segundos." << std::endl;
+			update_grid(app_state.grid, app_state.rows, app_state.cols);
+			start_time = time(nullptr);
+		}
+	}
+
+	// Actualiza anim.current_frame para correr el gif
+	for (auto& [name, anim] : app_state.animations) {
+		update_animation(anim);
+	}
+
+	// RENDERIZADO UI
+	ImGui_ImplSDL2_NewFrame();    
+	ImGui_ImplSDLRenderer2_NewFrame();
+	ImGui::NewFrame();
+
+	// Menu 
+	ShowExampleAppMainMenuBar(&app_state);
+	
+	// Ventana Simulación 
+	if(app_state.showParameters){
+	ImGui::Begin("Parámetros",nullptr , ImGuiWindowFlags_NoMove|| ImGuiWindowFlags_NoCollapse || ImGuiWindowFlags_NoResize);
+	ImGui::Checkbox("Run", &app_state.run_sim);
+	ImGui::DragInt("Hz", &app_state.frecuencia, 1, 1, 10, "%d", ImGuiSliderFlags_AlwaysClamp);
+    ImGui::Spacing();
+	ImGui::Text("Patron selecionado: %s", app_state.current_pattern.c_str());
+	ImGui::End();
+	}
+
+	
+	const ImVec2 button_size(64, 64);  // Ajustar según necesidad
+	
+	if(app_state.showStructures){
+	ImGui::Begin("Estructuras", nullptr, ImGuiWindowFlags_NoMove || ImGuiWindowFlags_AlwaysAutoResize);
+	if (ImGui::TreeNode("Still Life")){
+	// Tamaño común para los botones
+	// Función helper para crear botones
+	auto pattern_button = [&](const char* name, const char* tooltip, const ImVec2 button_size) {
+		ImGui::PushID(name);
+		
+		// Usar un ID único basado en el nombre para str_id
+		if (ImGui::ImageButton(
+			name,                            // str_id único (1er parámetro)
+			(ImTextureID)app_state.patterns[name],        // ImTextureID (2do parámetro)
+			button_size, 
+			ImVec2(0,0), 
+			ImVec2(1,1),
+			ImGui::GetStyle().Colors[ImGuiCol_Button], // Bg color
+			(name==app_state.current_pattern)? ImVec4(1,1,1,1):ImVec4(0.5, 0.5, 0.5, 0.5)                 // Tint color (blanco)
+		)) {
+			(name==app_state.current_pattern)? app_state.current_pattern="point":app_state.current_pattern=name;
+		}
+		
+		if (ImGui::IsItemHovered()) {
+			ImGui::BeginTooltip();
+			ImGui::TextUnformatted(tooltip);
+			ImGui::EndTooltip();
+		}
+		
+		ImGui::PopID();
+	};
+	// Organización en fila
+	pattern_button("block", "Block (Cuadrado 2x2)", button_size);
+	ImGui::SameLine();
+	pattern_button("beehive", "Beehive (Colmena)", button_size);
+	ImGui::SameLine();
+	pattern_button("boat", "Boat (Bote)", button_size);
+	ImGui::SameLine();
+	pattern_button("loaf", "Loaf (Pan)", button_size);
+	ImGui::SameLine();
+	pattern_button("flower", "Flower (Flor)", button_size);
+	ImGui::TreePop();
+	}
+
+	auto oscillator_button = [&](const char* name, const char* tooltip, const ImVec2 button_size) {
+			
+		ImGui::PushID(name);
+		
+		// 1. Verificar existencia
+		auto it = app_state.animations.find(name);
+		if (it == app_state.animations.end()) {
+			ImGui::TextColored(ImVec4(1,0,0,1), "Animación %s no cargada!", name);
+			ImGui::PopID();
+			return;
+		}
+		
+		// 2. Obtener referencia
+		Animation& anim = it->second;
+		
+		// 3. Verificar frames
+		if (!anim.frames || anim.current_frame < 0 || anim.current_frame >= anim.frame_count) {
+			ImGui::TextColored(ImVec4(1,0,0,1), "Animación %s corrupta!", name);
+			ImGui::PopID();
+			return;
+		}
+		
+		// 4. Usar la referencia con seguridad
+		SDL_Texture* current_frame = anim.frames[anim.current_frame];
+		Uint32 current_delay = anim.delays[anim.current_frame];
+		
+		if (ImGui::ImageButton(
+			name,
+			(ImTextureID)current_frame,
+			button_size,
+			ImVec2(0,0),
+			ImVec2(1,1),
+			ImGui::GetStyle().Colors[ImGuiCol_Button],
+			(name==app_state.current_pattern)? ImVec4(1,1,1,1):ImVec4(0.5, 0.5, 0.5, 0.5)                // Tint color (blanco)
+		)) {
+			(name==app_state.current_pattern)? app_state.current_pattern="point":app_state.current_pattern=name;
+		}
+		
+		if (ImGui::IsItemHovered()) {
+			ImGui::BeginTooltip();
+			ImGui::TextUnformatted(tooltip);
+			ImGui::EndTooltip();
+		}
+
+		ImGui::PopID();
+	};
+
+	if (ImGui::TreeNode("Oscilators")){
+	
+		oscillator_button("blinker", "Titilador", button_size);
+		ImGui::SameLine();
+		oscillator_button("beacon", "Farol", button_size);
+		ImGui::SameLine();
+		oscillator_button("toad", "Sapo", button_size);
+		ImGui::SameLine();
+		oscillator_button("pulsar", "Pulsar", button_size);
+		ImGui::TreePop();
+	}
+
+	if (ImGui::TreeNode("Spaceships")){
+		oscillator_button("glider", "Planeador", button_size);
+		ImGui::SameLine();
+		oscillator_button("lwss", "Nave ligera", button_size);
+		ImGui::SameLine();
+		oscillator_button("mwss", "Nave mediana", button_size);
+		ImGui::SameLine();
+		oscillator_button("hwss", "Nave pesada", button_size);
+		ImGui::TreePop();
+	}
+
+	if (ImGui::TreeNode("Guns")){
+		oscillator_button("glider_gun", "Glider Gun", ImVec2(128,64));
+		ImGui::TreePop();
+	}
+	// 3. Cerrar ventana
+	ImGui::End();
+	}
+
+	if(app_state.showMultiplayerConf){
+		ImGui::Begin("Configuración Multiplayeer",nullptr , ImGuiWindowFlags_NoCollapse || ImGuiWindowFlags_NoResize);
+		ImGui::Text("Estado de Conexión: Cerrada");
+		ImGui::Text("Puerto actual selecionado: %i", app_state.server_port);
+		ImGui::Text("IP actual: %i", app_state.server_ip);
+		ImGui::End();
+	}
+	
+	// Renderizado
+	SDL_SetRenderDrawColor( renderer, 24, 24, 24, 255 ); 	 
+	SDL_RenderClear( renderer );						 		// Limpia la pantalla
+	SDL_RenderSetScale(renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
+	ImGui::Render();											// Renderiza Imgui
+	print_grid(window, renderer, app_state.grid, vp, app_state.rows, app_state.cols);	// Imprime Grilla 
+	ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer);
+	SDL_RenderPresent( renderer );								//Imprime todo por SDL2
 
 	return true;
 }
 
 // Quit
 void kill() {
-	destructor_grid(grid, rows, cols);
-
 	ImGui_ImplSDLRenderer2_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();

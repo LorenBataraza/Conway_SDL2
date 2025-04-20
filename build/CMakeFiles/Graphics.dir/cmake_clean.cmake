@@ -3,8 +3,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/Graphics.dir/scr/dotted_line.cpp.o.d"
   "CMakeFiles/Graphics.dir/scr/grid.cpp.o"
   "CMakeFiles/Graphics.dir/scr/grid.cpp.o.d"
-  "CMakeFiles/Graphics.dir/scr/ui.cpp.o"
-  "CMakeFiles/Graphics.dir/scr/ui.cpp.o.d"
+  "CMakeFiles/Graphics.dir/scr/main_menu.cpp.o"
+  "CMakeFiles/Graphics.dir/scr/main_menu.cpp.o.d"
   "libGraphics.pdb"
   "libGraphics.so"
 )

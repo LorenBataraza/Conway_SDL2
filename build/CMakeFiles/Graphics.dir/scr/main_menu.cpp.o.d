@@ -1,8 +1,12 @@
-CMakeFiles/Graphics.dir/scr/grid.cpp.o: \
- /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/grid.cpp \
- /usr/include/stdc-predef.h /usr/include/c++/12/iostream \
- /usr/include/x86_64-linux-gnu/c++/12/bits/c++config.h \
- /usr/include/x86_64-linux-gnu/c++/12/bits/os_defines.h \
+CMakeFiles/Graphics.dir/scr/main_menu.cpp.o: \
+ /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/main_menu.cpp \
+ /usr/include/stdc-predef.h \
+ /home/lorenzo/Desktop/Proyectos/Conway_life_game/includes/imgui/imgui.h \
+ /home/lorenzo/Desktop/Proyectos/Conway_life_game/includes/imgui/imconfig.h \
+ /usr/lib/gcc/x86_64-linux-gnu/12/include/float.h \
+ /usr/lib/gcc/x86_64-linux-gnu/12/include/stdarg.h \
+ /usr/lib/gcc/x86_64-linux-gnu/12/include/stddef.h /usr/include/string.h \
+ /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/features.h /usr/include/features-time64.h \
  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
  /usr/include/x86_64-linux-gnu/bits/timesize.h \
@@ -10,25 +14,27 @@ CMakeFiles/Graphics.dir/scr/grid.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/long-double.h \
  /usr/include/x86_64-linux-gnu/gnu/stubs.h \
  /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
+ /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
+ /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
+ /usr/include/strings.h /usr/include/assert.h \
+ /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/appState.h \
+ /usr/include/c++/12/iostream \
+ /usr/include/x86_64-linux-gnu/c++/12/bits/c++config.h \
+ /usr/include/x86_64-linux-gnu/c++/12/bits/os_defines.h \
  /usr/include/x86_64-linux-gnu/c++/12/bits/cpu_defines.h \
  /usr/include/c++/12/pstl/pstl_config.h /usr/include/c++/12/ostream \
  /usr/include/c++/12/ios /usr/include/c++/12/iosfwd \
  /usr/include/c++/12/bits/stringfwd.h \
  /usr/include/c++/12/bits/memoryfwd.h /usr/include/c++/12/bits/postypes.h \
  /usr/include/c++/12/cwchar /usr/include/wchar.h \
- /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/x86_64-linux-gnu/bits/floatn.h \
  /usr/include/x86_64-linux-gnu/bits/floatn-common.h \
- /usr/lib/gcc/x86_64-linux-gnu/12/include/stddef.h \
- /usr/lib/gcc/x86_64-linux-gnu/12/include/stdarg.h \
  /usr/include/x86_64-linux-gnu/bits/wchar.h \
  /usr/include/x86_64-linux-gnu/bits/types/wint_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/mbstate_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/__FILE.h \
  /usr/include/x86_64-linux-gnu/bits/types/FILE.h \
- /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
- /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
  /usr/include/c++/12/exception /usr/include/c++/12/bits/exception.h \
  /usr/include/c++/12/bits/exception_ptr.h \
  /usr/include/c++/12/bits/exception_defines.h \
@@ -151,21 +157,7 @@ CMakeFiles/Graphics.dir/scr/grid.cpp.o: \
  /usr/include/c++/12/bits/locale_facets.tcc \
  /usr/include/c++/12/bits/basic_ios.tcc \
  /usr/include/c++/12/bits/ostream.tcc /usr/include/c++/12/istream \
- /usr/include/c++/12/bits/istream.tcc /usr/include/c++/12/fstream \
- /usr/include/c++/12/bits/codecvt.h \
- /usr/include/x86_64-linux-gnu/c++/12/bits/basic_file.h \
- /usr/include/x86_64-linux-gnu/c++/12/bits/c++io.h \
- /usr/include/c++/12/bits/fstream.tcc /usr/include/c++/12/algorithm \
- /usr/include/c++/12/bits/stl_algo.h \
- /usr/include/c++/12/bits/algorithmfwd.h \
- /usr/include/c++/12/bits/stl_heap.h \
- /usr/include/c++/12/bits/stl_tempbuf.h \
- /usr/include/c++/12/bits/uniform_int_dist.h \
- /usr/include/c++/12/bits/ranges_algo.h \
- /usr/include/c++/12/bits/ranges_algobase.h \
- /usr/include/c++/12/bits/ranges_util.h \
- /usr/include/c++/12/pstl/glue_algorithm_defs.h \
- /usr/include/c++/12/pstl/execution_defs.h /usr/include/c++/12/vector \
+ /usr/include/c++/12/bits/istream.tcc /usr/include/c++/12/vector \
  /usr/include/c++/12/bits/stl_uninitialized.h \
  /usr/include/c++/12/bits/stl_vector.h \
  /usr/include/c++/12/bits/stl_bvector.h \
@@ -183,8 +175,8 @@ CMakeFiles/Graphics.dir/scr/grid.cpp.o: \
  /usr/include/x86_64-linux-gnu/SDL2/_real_SDL_config.h \
  /usr/include/SDL2/SDL_platform.h /usr/include/SDL2/begin_code.h \
  /usr/include/SDL2/close_code.h /usr/include/c++/12/stdlib.h \
- /usr/include/string.h /usr/include/strings.h /usr/include/inttypes.h \
- /usr/include/c++/12/math.h /usr/include/c++/12/cmath /usr/include/math.h \
+ /usr/include/inttypes.h /usr/include/c++/12/math.h \
+ /usr/include/c++/12/cmath /usr/include/math.h \
  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
@@ -206,14 +198,12 @@ CMakeFiles/Graphics.dir/scr/grid.cpp.o: \
  /usr/include/c++/12/tr1/modified_bessel_func.tcc \
  /usr/include/c++/12/tr1/poly_hermite.tcc \
  /usr/include/c++/12/tr1/poly_laguerre.tcc \
- /usr/include/c++/12/tr1/riemann_zeta.tcc \
- /usr/lib/gcc/x86_64-linux-gnu/12/include/float.h \
- /usr/include/SDL2/SDL_assert.h /usr/include/SDL2/SDL_atomic.h \
- /usr/include/SDL2/SDL_platform.h /usr/include/SDL2/SDL_audio.h \
- /usr/include/SDL2/SDL_error.h /usr/include/SDL2/SDL_endian.h \
- /usr/include/SDL2/SDL_mutex.h /usr/include/SDL2/SDL_thread.h \
- /usr/include/SDL2/SDL_rwops.h /usr/include/SDL2/SDL_clipboard.h \
- /usr/include/SDL2/SDL_cpuinfo.h \
+ /usr/include/c++/12/tr1/riemann_zeta.tcc /usr/include/SDL2/SDL_assert.h \
+ /usr/include/SDL2/SDL_atomic.h /usr/include/SDL2/SDL_platform.h \
+ /usr/include/SDL2/SDL_audio.h /usr/include/SDL2/SDL_error.h \
+ /usr/include/SDL2/SDL_endian.h /usr/include/SDL2/SDL_mutex.h \
+ /usr/include/SDL2/SDL_thread.h /usr/include/SDL2/SDL_rwops.h \
+ /usr/include/SDL2/SDL_clipboard.h /usr/include/SDL2/SDL_cpuinfo.h \
  /usr/lib/gcc/x86_64-linux-gnu/12/include/immintrin.h \
  /usr/lib/gcc/x86_64-linux-gnu/12/include/x86gprintrin.h \
  /usr/lib/gcc/x86_64-linux-gnu/12/include/ia32intrin.h \
@@ -316,7 +306,5 @@ CMakeFiles/Graphics.dir/scr/grid.cpp.o: \
  /usr/include/SDL2/SDL_render.h /usr/include/SDL2/SDL_shape.h \
  /usr/include/SDL2/SDL_system.h /usr/include/SDL2/SDL_timer.h \
  /usr/include/SDL2/SDL_version.h /usr/include/SDL2/SDL_locale.h \
- /usr/include/SDL2/SDL_misc.h /usr/include/SDL2/SDL_ttf.h \
- /usr/include/SDL2/SDL.h \
- /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/dotted_line.h \
+ /usr/include/SDL2/SDL_misc.h \
  /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/grid.h

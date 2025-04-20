@@ -10,7 +10,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/dotted_line.cpp" "CMakeFiles/Graphics.dir/scr/dotted_line.cpp.o" "gcc" "CMakeFiles/Graphics.dir/scr/dotted_line.cpp.o.d"
   "/home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/grid.cpp" "CMakeFiles/Graphics.dir/scr/grid.cpp.o" "gcc" "CMakeFiles/Graphics.dir/scr/grid.cpp.o.d"
-  "/home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/ui.cpp" "CMakeFiles/Graphics.dir/scr/ui.cpp.o" "gcc" "CMakeFiles/Graphics.dir/scr/ui.cpp.o.d"
+  "/home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/main_menu.cpp" "CMakeFiles/Graphics.dir/scr/main_menu.cpp.o" "gcc" "CMakeFiles/Graphics.dir/scr/main_menu.cpp.o.d"
   )
 
 # Targets to which this target links.
