@@ -65,6 +65,16 @@ CMAKE_BINARY_DIR = /home/lorenzo/Desktop/Proyectos/Conway_life_game/build
 #=============================================================================
 # Targets provided globally by CMake.
 
+# Special rule for the target test
+test:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running tests..."
+	/usr/bin/ctest --force-new-ctest-process $(ARGS)
+.PHONY : test
+
+# Special rule for the target test
+test/fast: test
+.PHONY : test/fast
+
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
@@ -167,6 +177,32 @@ conway_server: cmake_check_build_system
 conway_server/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/conway_server.dir/build.make CMakeFiles/conway_server.dir/build
 .PHONY : conway_server/fast
+
+#=============================================================================
+# Target rules for targets named ncurses_viewer
+
+# Build rule for target.
+ncurses_viewer: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 ncurses_viewer
+.PHONY : ncurses_viewer
+
+# fast build rule for target.
+ncurses_viewer/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ncurses_viewer.dir/build.make CMakeFiles/ncurses_viewer.dir/build
+.PHONY : ncurses_viewer/fast
+
+#=============================================================================
+# Target rules for targets named test_server
+
+# Build rule for target.
+test_server: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_server
+.PHONY : test_server
+
+# fast build rule for target.
+test_server/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_server.dir/build.make CMakeFiles/test_server.dir/build
+.PHONY : test_server/fast
 
 includes/imgui/imgui.o: includes/imgui/imgui.cpp.o
 .PHONY : includes/imgui/imgui.o
@@ -411,6 +447,30 @@ scr/main_menu.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Graphics.dir/build.make CMakeFiles/Graphics.dir/scr/main_menu.cpp.s
 .PHONY : scr/main_menu.cpp.s
 
+scr/ncurses_viewer.o: scr/ncurses_viewer.cpp.o
+.PHONY : scr/ncurses_viewer.o
+
+# target to build an object file
+scr/ncurses_viewer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ncurses_viewer.dir/build.make CMakeFiles/ncurses_viewer.dir/scr/ncurses_viewer.cpp.o
+.PHONY : scr/ncurses_viewer.cpp.o
+
+scr/ncurses_viewer.i: scr/ncurses_viewer.cpp.i
+.PHONY : scr/ncurses_viewer.i
+
+# target to preprocess a source file
+scr/ncurses_viewer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ncurses_viewer.dir/build.make CMakeFiles/ncurses_viewer.dir/scr/ncurses_viewer.cpp.i
+.PHONY : scr/ncurses_viewer.cpp.i
+
+scr/ncurses_viewer.s: scr/ncurses_viewer.cpp.s
+.PHONY : scr/ncurses_viewer.s
+
+# target to generate assembly for a file
+scr/ncurses_viewer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ncurses_viewer.dir/build.make CMakeFiles/ncurses_viewer.dir/scr/ncurses_viewer.cpp.s
+.PHONY : scr/ncurses_viewer.cpp.s
+
 scr/server.o: scr/server.cpp.o
 .PHONY : scr/server.o
 
@@ -435,6 +495,30 @@ scr/server.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/conway_server.dir/build.make CMakeFiles/conway_server.dir/scr/server.cpp.s
 .PHONY : scr/server.cpp.s
 
+tests/test_server.o: tests/test_server.cpp.o
+.PHONY : tests/test_server.o
+
+# target to build an object file
+tests/test_server.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_server.dir/build.make CMakeFiles/test_server.dir/tests/test_server.cpp.o
+.PHONY : tests/test_server.cpp.o
+
+tests/test_server.i: tests/test_server.cpp.i
+.PHONY : tests/test_server.i
+
+# target to preprocess a source file
+tests/test_server.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_server.dir/build.make CMakeFiles/test_server.dir/tests/test_server.cpp.i
+.PHONY : tests/test_server.cpp.i
+
+tests/test_server.s: tests/test_server.cpp.s
+.PHONY : tests/test_server.s
+
+# target to generate assembly for a file
+tests/test_server.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_server.dir/build.make CMakeFiles/test_server.dir/tests/test_server.cpp.s
+.PHONY : tests/test_server.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -443,10 +527,13 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... test"
 	@echo "... Graphics"
 	@echo "... conway_server"
 	@echo "... imgui"
 	@echo "... life_game"
+	@echo "... ncurses_viewer"
+	@echo "... test_server"
 	@echo "... includes/imgui/imgui.o"
 	@echo "... includes/imgui/imgui.i"
 	@echo "... includes/imgui/imgui.s"
@@ -477,9 +564,15 @@ help:
 	@echo "... scr/main_menu.o"
 	@echo "... scr/main_menu.i"
 	@echo "... scr/main_menu.s"
+	@echo "... scr/ncurses_viewer.o"
+	@echo "... scr/ncurses_viewer.i"
+	@echo "... scr/ncurses_viewer.s"
 	@echo "... scr/server.o"
 	@echo "... scr/server.i"
 	@echo "... scr/server.s"
+	@echo "... tests/test_server.o"
+	@echo "... tests/test_server.i"
+	@echo "... tests/test_server.s"
 .PHONY : help
 
 

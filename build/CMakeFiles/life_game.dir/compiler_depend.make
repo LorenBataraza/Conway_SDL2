@@ -370,11 +370,6 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
   /home/lorenzo/Desktop/Proyectos/Conway_life_game/includes/imgui/imgui_impl_sdl2.h \
   /home/lorenzo/Desktop/Proyectos/Conway_life_game/includes/imgui/imgui_impl_sdlrenderer2.h \
   /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/appState.h \
-  /usr/include/c++/12/vector \
-  /usr/include/c++/12/bits/stl_uninitialized.h \
-  /usr/include/c++/12/bits/stl_vector.h \
-  /usr/include/c++/12/bits/stl_bvector.h \
-  /usr/include/c++/12/bits/vector.tcc \
   /usr/include/c++/12/unordered_map \
   /usr/include/c++/12/ext/aligned_buffer.h \
   /usr/include/c++/12/bits/hashtable.h \
@@ -385,7 +380,6 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
   /usr/include/c++/12/bits/node_handle.h \
   /usr/include/c++/12/bits/unordered_map.h \
   /usr/include/c++/12/bits/erase_if.h \
-  /usr/include/arpa/inet.h \
   /usr/include/netinet/in.h \
   /usr/include/x86_64-linux-gnu/sys/socket.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h \
@@ -406,11 +400,55 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
   /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h \
   /usr/include/x86_64-linux-gnu/bits/in.h \
   /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/grid.h \
-  /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/main_menu.cpp \
-  /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/client.cpp \
-  /usr/lib/gcc/x86_64-linux-gnu/12/include/stdbool.h \
+  /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/packet_logger.h \
+  /usr/include/c++/12/fstream \
+  /usr/include/c++/12/bits/codecvt.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/basic_file.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/c++io.h \
+  /usr/include/c++/12/bits/fstream.tcc \
   /usr/include/c++/12/sstream \
   /usr/include/c++/12/bits/sstream.tcc \
+  /usr/include/c++/12/chrono \
+  /usr/include/c++/12/bits/chrono.h \
+  /usr/include/c++/12/ratio \
+  /usr/include/c++/12/bits/parse_numbers.h \
+  /usr/include/c++/12/iomanip \
+  /usr/include/c++/12/locale \
+  /usr/include/c++/12/bits/locale_facets_nonio.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/time_members.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/messages_members.h \
+  /usr/include/libintl.h \
+  /usr/include/c++/12/bits/locale_facets_nonio.tcc \
+  /usr/include/c++/12/bits/locale_conv.h \
+  /usr/include/c++/12/bits/quoted_string.h \
+  /usr/include/c++/12/mutex \
+  /usr/include/c++/12/bits/std_mutex.h \
+  /usr/include/c++/12/bits/unique_lock.h \
+  /usr/include/c++/12/memory \
+  /usr/include/c++/12/bits/stl_uninitialized.h \
+  /usr/include/c++/12/bits/stl_tempbuf.h \
+  /usr/include/c++/12/bits/stl_raw_storage_iter.h \
+  /usr/include/c++/12/bits/align.h \
+  /usr/include/c++/12/bit \
+  /usr/include/c++/12/bits/unique_ptr.h \
+  /usr/include/c++/12/bits/shared_ptr.h \
+  /usr/include/c++/12/bits/shared_ptr_base.h \
+  /usr/include/c++/12/bits/allocated_ptr.h \
+  /usr/include/c++/12/ext/concurrence.h \
+  /usr/include/c++/12/bits/shared_ptr_atomic.h \
+  /usr/include/c++/12/bits/atomic_base.h \
+  /usr/include/c++/12/bits/atomic_lockfree_defines.h \
+  /usr/include/c++/12/bits/atomic_wait.h \
+  /usr/include/c++/12/climits \
+  /usr/lib/gcc/x86_64-linux-gnu/12/include/limits.h \
+  /usr/lib/gcc/x86_64-linux-gnu/12/include/syslimits.h \
+  /usr/include/limits.h \
+  /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/local_lim.h \
+  /usr/include/linux/limits.h \
+  /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
   /usr/include/unistd.h \
   /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
   /usr/include/x86_64-linux-gnu/bits/environments.h \
@@ -419,6 +457,26 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
   /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
   /usr/include/x86_64-linux-gnu/bits/unistd_ext.h \
   /usr/include/linux/close_range.h \
+  /usr/include/syscall.h \
+  /usr/include/x86_64-linux-gnu/sys/syscall.h \
+  /usr/include/x86_64-linux-gnu/asm/unistd.h \
+  /usr/include/x86_64-linux-gnu/asm/unistd_64.h \
+  /usr/include/x86_64-linux-gnu/bits/syscall.h \
+  /usr/include/c++/12/backward/auto_ptr.h \
+  /usr/include/c++/12/bits/ranges_uninitialized.h \
+  /usr/include/c++/12/bits/ranges_algobase.h \
+  /usr/include/c++/12/bits/uses_allocator_args.h \
+  /usr/include/c++/12/pstl/glue_memory_defs.h \
+  /usr/include/c++/12/pstl/execution_defs.h \
+  /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/patterns.h \
+  /usr/include/c++/12/vector \
+  /usr/include/c++/12/bits/stl_vector.h \
+  /usr/include/c++/12/bits/stl_bvector.h \
+  /usr/include/c++/12/bits/vector.tcc \
+  /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/main_menu.cpp \
+  /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/client.cpp \
+  /usr/include/c++/12/cstring \
+  /usr/include/arpa/inet.h \
   /usr/include/fcntl.h \
   /usr/include/x86_64-linux-gnu/bits/fcntl.h \
   /usr/include/x86_64-linux-gnu/bits/fcntl-linux.h \
@@ -435,6 +493,26 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/fcntl.h:
 
+/home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/main_menu.cpp:
+
+/usr/include/c++/12/bits/stl_bvector.h:
+
+/usr/include/c++/12/bits/stl_vector.h:
+
+/usr/include/c++/12/bits/uses_allocator_args.h:
+
+/usr/include/c++/12/bits/ranges_uninitialized.h:
+
+/usr/include/c++/12/backward/auto_ptr.h:
+
+/usr/include/x86_64-linux-gnu/bits/syscall.h:
+
+/usr/include/x86_64-linux-gnu/asm/unistd_64.h:
+
+/usr/include/x86_64-linux-gnu/sys/syscall.h:
+
+/usr/include/syscall.h:
+
 /usr/include/linux/close_range.h:
 
 /usr/include/x86_64-linux-gnu/bits/confname.h:
@@ -443,9 +521,47 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/unistd.h:
 
-/home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/main_menu.cpp:
+/usr/include/x86_64-linux-gnu/bits/uio_lim.h:
+
+/usr/include/x86_64-linux-gnu/bits/xopen_lim.h:
+
+/usr/include/x86_64-linux-gnu/bits/posix2_lim.h:
+
+/usr/include/linux/limits.h:
+
+/usr/include/x86_64-linux-gnu/bits/posix1_lim.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/syslimits.h:
+
+/usr/include/c++/12/climits:
+
+/usr/include/c++/12/bits/atomic_wait.h:
+
+/usr/include/c++/12/ext/concurrence.h:
+
+/usr/include/c++/12/bits/shared_ptr_base.h:
+
+/usr/include/c++/12/bits/shared_ptr.h:
+
+/usr/include/c++/12/bits/stl_raw_storage_iter.h:
+
+/usr/include/c++/12/bits/std_mutex.h:
+
+/usr/include/c++/12/bits/locale_facets_nonio.tcc:
+
+/usr/include/c++/12/locale:
+
+/usr/include/c++/12/bits/parse_numbers.h:
+
+/usr/include/c++/12/bits/fstream.tcc:
+
+/usr/include/x86_64-linux-gnu/c++/12/bits/c++io.h:
+
+/usr/include/c++/12/fstream:
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h:
+
+/usr/include/c++/12/mutex:
 
 /usr/include/asm-generic/sockios.h:
 
@@ -453,9 +569,13 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/linux/posix_types.h:
 
+/usr/include/c++/12/bits/atomic_lockfree_defines.h:
+
 /usr/include/x86_64-linux-gnu/bits/socket_type.h:
 
 /usr/include/x86_64-linux-gnu/bits/socket.h:
+
+/usr/include/x86_64-linux-gnu/c++/12/bits/time_members.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h:
 
@@ -468,10 +588,6 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/include/c++/12/bits/hashtable.h:
 
 /usr/include/c++/12/unordered_map:
-
-/usr/include/c++/12/bits/stl_bvector.h:
-
-/usr/include/c++/12/bits/stl_vector.h:
 
 /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/appState.h:
 
@@ -508,6 +624,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/include/SDL2/SDL_keyboard.h:
 
 /usr/include/SDL2/SDL_events.h:
+
+/usr/include/c++/12/bits/shared_ptr_atomic.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/amxint8intrin.h:
 
@@ -547,6 +665,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/avx512dqintrin.h:
 
+/usr/include/c++/12/bits/stl_tempbuf.h:
+
 /usr/lib/gcc/x86_64-linux-gnu/12/include/keylockerintrin.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/avx512vlintrin.h:
@@ -583,6 +703,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/xsavesintrin.h:
 
+/usr/include/c++/12/bits/ranges_algobase.h:
+
 /usr/lib/gcc/x86_64-linux-gnu/12/include/fmaintrin.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/xsaveoptintrin.h:
@@ -595,7 +717,11 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/xsaveintrin.h:
 
+/usr/include/c++/12/pstl/execution_defs.h:
+
 /usr/lib/gcc/x86_64-linux-gnu/12/include/waitpkgintrin.h:
+
+/usr/include/c++/12/bits/unique_ptr.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/uintrintrin.h:
 
@@ -629,7 +755,13 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/c++/12/bits/new_allocator.h:
 
+/usr/include/c++/12/bits/codecvt.h:
+
 /usr/include/c++/12/bits/cpp_type_traits.h:
+
+/home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/patterns.h:
+
+/usr/include/x86_64-linux-gnu/c++/12/bits/messages_members.h:
 
 /usr/include/x86_64-linux-gnu/bits/wordsize.h:
 
@@ -650,6 +782,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/lib/gcc/x86_64-linux-gnu/12/include/rtmintrin.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h:
+
+/usr/include/c++/12/bit:
 
 /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h:
 
@@ -678,6 +812,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/include/x86_64-linux-gnu/bits/types/timer_t.h:
 
 /usr/include/SDL2/SDL_platform.h:
+
+/usr/include/c++/12/memory:
 
 /usr/include/x86_64-linux-gnu/bits/types/struct___jmp_buf_tag.h:
 
@@ -775,9 +911,9 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/x86_64-linux-gnu/bits/stdint-intn.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/12/include/stdbool.h:
-
 /usr/include/x86_64-linux-gnu/bits/types.h:
+
+/usr/include/c++/12/ratio:
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/stdint.h:
 
@@ -817,6 +953,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/x86_64-linux-gnu/bits/select.h:
 
+/usr/include/x86_64-linux-gnu/asm/unistd.h:
+
 /usr/include/c++/12/cerrno:
 
 /usr/include/c++/12/stdlib.h:
@@ -835,6 +973,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/arpa/inet.h:
 
+/usr/include/c++/12/bits/atomic_base.h:
+
 /usr/include/SDL2/SDL_locale.h:
 
 /usr/include/x86_64-linux-gnu/c++/12/bits/ctype_base.h:
@@ -844,6 +984,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/lib/gcc/x86_64-linux-gnu/12/include/stdarg.h:
 
 /usr/include/x86_64-linux-gnu/bits/libc-header-start.h:
+
+/usr/include/c++/12/bits/chrono.h:
 
 /usr/include/c++/12/clocale:
 
@@ -867,6 +1009,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/c++/12/bits/move.h:
 
+/usr/include/c++/12/cstring:
+
 /usr/include/SDL2/SDL_gesture.h:
 
 /usr/include/ctype.h:
@@ -878,6 +1022,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/include/pthread.h:
 
 /usr/include/c++/12/bits/stl_iterator_base_funcs.h:
+
+/home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/packet_logger.h:
 
 /usr/include/x86_64-linux-gnu/asm/posix_types.h:
 
@@ -896,6 +1042,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/include/x86_64-linux-gnu/bits/types/__sigset_t.h:
 
 /usr/include/c++/12/cmath:
+
+/usr/include/c++/12/bits/unique_lock.h:
 
 /usr/include/c++/12/concepts:
 
@@ -929,7 +1077,11 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/x86_64-linux-gnu/bits/types/locale_t.h:
 
+/usr/include/c++/12/bits/align.h:
+
 /usr/include/x86_64-linux-gnu/bits/wctype-wchar.h:
+
+/usr/include/c++/12/bits/locale_facets_nonio.h:
 
 /usr/include/c++/12/bits/exception.h:
 
@@ -939,13 +1091,19 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/x86_64-linux-gnu/c++/12/bits/gthr.h:
 
+/usr/include/c++/12/bits/quoted_string.h:
+
 /usr/include/SDL2/SDL_stdinc.h:
 
 /usr/include/c++/12/tr1/beta_function.tcc:
 
+/usr/include/x86_64-linux-gnu/bits/local_lim.h:
+
 /usr/lib/gcc/x86_64-linux-gnu/12/include/vaesintrin.h:
 
 /usr/include/c++/12/type_traits:
+
+/usr/include/x86_64-linux-gnu/c++/12/bits/basic_file.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h:
 
@@ -1025,6 +1183,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/c++/12/bits/hash_bytes.h:
 
+/usr/include/c++/12/bits/allocated_ptr.h:
+
 /usr/include/c++/12/bits/nested_exception.h:
 
 /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/main.cpp:
@@ -1033,11 +1193,15 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/c++/12/compare:
 
+/usr/include/c++/12/iomanip:
+
 /usr/include/c++/12/debug/debug.h:
 
 /usr/include/c++/12/initializer_list:
 
 /usr/include/c++/12/ext/alloc_traits.h:
+
+/usr/include/limits.h:
 
 /usr/include/c++/12/bits/alloc_traits.h:
 
@@ -1069,11 +1233,15 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/x86_64-linux-gnu/bits/byteswap.h:
 
+/usr/include/c++/12/chrono:
+
 /usr/include/x86_64-linux-gnu/bits/waitflags.h:
 
 /usr/include/x86_64-linux-gnu/bits/waitstatus.h:
 
 /usr/include/x86_64-linux-gnu/sys/types.h:
+
+/usr/include/c++/12/pstl/glue_memory_defs.h:
 
 /usr/include/SDL2/SDL_main.h:
 
@@ -1181,6 +1349,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/c++/12/bits/stl_uninitialized.h:
 
+/usr/include/c++/12/bits/locale_conv.h:
+
 /usr/include/SDL2/SDL_rect.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/cetintrin.h:
@@ -1196,6 +1366,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/include/x86_64-linux-gnu/bits/iscanonical.h:
 
 /usr/include/c++/12/bits/specfun.h:
+
+/usr/include/libintl.h:
 
 /usr/include/c++/12/bits/sstream.tcc:
 
@@ -1252,6 +1424,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/lib/gcc/x86_64-linux-gnu/12/include/cldemoteintrin.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/clzerointrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/limits.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/pkuintrin.h:
 

@@ -226,3 +226,38 @@ Parsed CXX implicit link information from above output:
   implicit fwks: []
 
 
+Performing C++ SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD succeeded with the following output:
+Change Dir: /home/lorenzo/Desktop/Proyectos/Conway_life_game/CMakeFiles/CMakeScratch/TryCompile-WEmLV9
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_b36ad/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_b36ad.dir/build.make CMakeFiles/cmTC_b36ad.dir/build
+gmake[1]: Entering directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/CMakeFiles/CMakeScratch/TryCompile-WEmLV9'
+Building CXX object CMakeFiles/cmTC_b36ad.dir/src.cxx.o
+/usr/bin/c++ -DCMAKE_HAVE_LIBC_PTHREAD  -std=gnu++23 -o CMakeFiles/cmTC_b36ad.dir/src.cxx.o -c /home/lorenzo/Desktop/Proyectos/Conway_life_game/CMakeFiles/CMakeScratch/TryCompile-WEmLV9/src.cxx
+Linking CXX executable cmTC_b36ad
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b36ad.dir/link.txt --verbose=1
+/usr/bin/c++ CMakeFiles/cmTC_b36ad.dir/src.cxx.o -o cmTC_b36ad 
+gmake[1]: Leaving directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/CMakeFiles/CMakeScratch/TryCompile-WEmLV9'
+
+
+Source file was:
+#include <pthread.h>
+
+static void* test_func(void* data)
+{
+  return data;
+}
+
+int main(void)
+{
+  pthread_t thread;
+  pthread_create(&thread, NULL, test_func, NULL);
+  pthread_detach(thread);
+  pthread_cancel(thread);
+  pthread_join(thread, NULL);
+  pthread_atfork(NULL, NULL, NULL);
+  pthread_exit(NULL);
+
+  return 0;
+}
+
+

@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = -DGraphics_EXPORTS
 
-CXX_INCLUDES = -I/home/lorenzo/Desktop/Proyectos/Conway_life_game/includes -I/home/lorenzo/Desktop/Proyectos/Conway_life_game/includes/imgui -I/usr/include/SDL2 -I/usr/include/libpng16
+CXX_INCLUDES = -I/home/lorenzo/Desktop/Proyectos/Conway_life_game/includes -I/home/lorenzo/Desktop/Proyectos/Conway_life_game/scr -I/usr/include/SDL2 -I/usr/include/libpng16 -I/home/lorenzo/Desktop/Proyectos/Conway_life_game/includes/imgui
 
 CXX_FLAGS = -fPIC -std=gnu++23
 

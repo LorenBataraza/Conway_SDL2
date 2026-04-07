@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/test_server.dir/tests/test_server.cpp.o -o test_server  -Wl,-rpath,/home/lorenzo/miniconda3/lib /home/lorenzo/miniconda3/lib/libgtest_main.so.1.11.0 /home/lorenzo/miniconda3/lib/libgmock.so.1.11.0 -lpthread /home/lorenzo/miniconda3/lib/libgtest.so.1.11.0 

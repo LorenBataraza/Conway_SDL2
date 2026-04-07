@@ -1,0 +1,5 @@
+if(EXISTS "/home/lorenzo/Desktop/Proyectos/Conway_life_game/test_server[1]_tests.cmake")
+  include("/home/lorenzo/Desktop/Proyectos/Conway_life_game/test_server[1]_tests.cmake")
+else()
+  add_test(test_server_NOT_BUILT test_server_NOT_BUILT)
+endif()

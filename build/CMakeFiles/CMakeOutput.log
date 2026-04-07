@@ -230,3 +230,40 @@ Parsed CXX implicit link information from above output:
   implicit fwks: []
 
 
+Performing C++ SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD succeeded with the following output:
+Change Dir: /home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-LN1UJZ
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_ae02e/fast && gmake[1]: Entering directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-LN1UJZ'
+/usr/bin/gmake  -f CMakeFiles/cmTC_ae02e.dir/build.make CMakeFiles/cmTC_ae02e.dir/build
+gmake[2]: Entering directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-LN1UJZ'
+Building CXX object CMakeFiles/cmTC_ae02e.dir/src.cxx.o
+/usr/bin/c++ -DCMAKE_HAVE_LIBC_PTHREAD  -std=gnu++23 -o CMakeFiles/cmTC_ae02e.dir/src.cxx.o -c /home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-LN1UJZ/src.cxx
+Linking CXX executable cmTC_ae02e
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_ae02e.dir/link.txt --verbose=1
+/usr/bin/c++ CMakeFiles/cmTC_ae02e.dir/src.cxx.o -o cmTC_ae02e 
+gmake[2]: Leaving directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-LN1UJZ'
+gmake[1]: Leaving directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-LN1UJZ'
+
+
+Source file was:
+#include <pthread.h>
+
+static void* test_func(void* data)
+{
+  return data;
+}
+
+int main(void)
+{
+  pthread_t thread;
+  pthread_create(&thread, NULL, test_func, NULL);
+  pthread_detach(thread);
+  pthread_cancel(thread);
+  pthread_join(thread, NULL);
+  pthread_atfork(NULL, NULL, NULL);
+  pthread_exit(NULL);
+
+  return 0;
+}
+
+

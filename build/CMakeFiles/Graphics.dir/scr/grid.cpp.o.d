@@ -169,22 +169,15 @@ CMakeFiles/Graphics.dir/scr/grid.cpp.o: \
  /usr/include/c++/12/bits/stl_uninitialized.h \
  /usr/include/c++/12/bits/stl_vector.h \
  /usr/include/c++/12/bits/stl_bvector.h \
- /usr/include/c++/12/bits/vector.tcc /usr/include/c++/12/unordered_map \
- /usr/include/c++/12/ext/aligned_buffer.h \
- /usr/include/c++/12/bits/hashtable.h \
- /usr/include/c++/12/bits/hashtable_policy.h /usr/include/c++/12/tuple \
- /usr/include/c++/12/bits/uses_allocator.h \
- /usr/include/c++/12/bits/enable_special_members.h \
- /usr/include/c++/12/bits/node_handle.h \
- /usr/include/c++/12/bits/unordered_map.h \
- /usr/include/c++/12/bits/erase_if.h /usr/include/SDL2/SDL.h \
+ /usr/include/c++/12/bits/vector.tcc /usr/include/c++/12/cstring \
+ /usr/include/string.h /usr/include/strings.h /usr/include/SDL2/SDL.h \
  /usr/include/SDL2/SDL_main.h /usr/include/SDL2/SDL_stdinc.h \
  /usr/include/SDL2/SDL_config.h \
  /usr/include/x86_64-linux-gnu/SDL2/_real_SDL_config.h \
  /usr/include/SDL2/SDL_platform.h /usr/include/SDL2/begin_code.h \
  /usr/include/SDL2/close_code.h /usr/include/c++/12/stdlib.h \
- /usr/include/string.h /usr/include/strings.h /usr/include/inttypes.h \
- /usr/include/c++/12/math.h /usr/include/c++/12/cmath /usr/include/math.h \
+ /usr/include/inttypes.h /usr/include/c++/12/math.h \
+ /usr/include/c++/12/cmath /usr/include/math.h \
  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
@@ -318,5 +311,14 @@ CMakeFiles/Graphics.dir/scr/grid.cpp.o: \
  /usr/include/SDL2/SDL_version.h /usr/include/SDL2/SDL_locale.h \
  /usr/include/SDL2/SDL_misc.h /usr/include/SDL2/SDL_ttf.h \
  /usr/include/SDL2/SDL.h \
- /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/dotted_line.h \
- /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/grid.h
+ /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/grid.h \
+ /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/patterns.h \
+ /usr/include/c++/12/unordered_map \
+ /usr/include/c++/12/ext/aligned_buffer.h \
+ /usr/include/c++/12/bits/hashtable.h \
+ /usr/include/c++/12/bits/hashtable_policy.h /usr/include/c++/12/tuple \
+ /usr/include/c++/12/bits/uses_allocator.h \
+ /usr/include/c++/12/bits/enable_special_members.h \
+ /usr/include/c++/12/bits/node_handle.h \
+ /usr/include/c++/12/bits/unordered_map.h \
+ /usr/include/c++/12/bits/erase_if.h
