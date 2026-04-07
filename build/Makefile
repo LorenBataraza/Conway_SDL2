@@ -155,6 +155,19 @@ life_game/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/life_game.dir/build.make CMakeFiles/life_game.dir/build
 .PHONY : life_game/fast
 
+#=============================================================================
+# Target rules for targets named conway_server
+
+# Build rule for target.
+conway_server: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 conway_server
+.PHONY : conway_server
+
+# fast build rule for target.
+conway_server/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conway_server.dir/build.make CMakeFiles/conway_server.dir/build
+.PHONY : conway_server/fast
+
 includes/imgui/imgui.o: includes/imgui/imgui.cpp.o
 .PHONY : includes/imgui/imgui.o
 
@@ -329,6 +342,7 @@ scr/grid.o: scr/grid.cpp.o
 # target to build an object file
 scr/grid.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Graphics.dir/build.make CMakeFiles/Graphics.dir/scr/grid.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conway_server.dir/build.make CMakeFiles/conway_server.dir/scr/grid.cpp.o
 .PHONY : scr/grid.cpp.o
 
 scr/grid.i: scr/grid.cpp.i
@@ -337,6 +351,7 @@ scr/grid.i: scr/grid.cpp.i
 # target to preprocess a source file
 scr/grid.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Graphics.dir/build.make CMakeFiles/Graphics.dir/scr/grid.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conway_server.dir/build.make CMakeFiles/conway_server.dir/scr/grid.cpp.i
 .PHONY : scr/grid.cpp.i
 
 scr/grid.s: scr/grid.cpp.s
@@ -345,6 +360,7 @@ scr/grid.s: scr/grid.cpp.s
 # target to generate assembly for a file
 scr/grid.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Graphics.dir/build.make CMakeFiles/Graphics.dir/scr/grid.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conway_server.dir/build.make CMakeFiles/conway_server.dir/scr/grid.cpp.s
 .PHONY : scr/grid.cpp.s
 
 scr/main.o: scr/main.cpp.o
@@ -395,6 +411,30 @@ scr/main_menu.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Graphics.dir/build.make CMakeFiles/Graphics.dir/scr/main_menu.cpp.s
 .PHONY : scr/main_menu.cpp.s
 
+scr/server.o: scr/server.cpp.o
+.PHONY : scr/server.o
+
+# target to build an object file
+scr/server.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conway_server.dir/build.make CMakeFiles/conway_server.dir/scr/server.cpp.o
+.PHONY : scr/server.cpp.o
+
+scr/server.i: scr/server.cpp.i
+.PHONY : scr/server.i
+
+# target to preprocess a source file
+scr/server.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conway_server.dir/build.make CMakeFiles/conway_server.dir/scr/server.cpp.i
+.PHONY : scr/server.cpp.i
+
+scr/server.s: scr/server.cpp.s
+.PHONY : scr/server.s
+
+# target to generate assembly for a file
+scr/server.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conway_server.dir/build.make CMakeFiles/conway_server.dir/scr/server.cpp.s
+.PHONY : scr/server.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -404,6 +444,7 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... Graphics"
+	@echo "... conway_server"
 	@echo "... imgui"
 	@echo "... life_game"
 	@echo "... includes/imgui/imgui.o"
@@ -436,6 +477,9 @@ help:
 	@echo "... scr/main_menu.o"
 	@echo "... scr/main_menu.i"
 	@echo "... scr/main_menu.s"
+	@echo "... scr/server.o"
+	@echo "... scr/server.i"
+	@echo "... scr/server.s"
 .PHONY : help
 
 

@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <vector>
 #include <unordered_map>
+#include <arpa/inet.h>
+
 #include <SDL2/SDL.h>
 
 #include "grid.h"
@@ -122,6 +124,8 @@ struct AppState {
     
     // Multiplayer simulation
     bool multiplayer= false;
+    int client_socket;
+    struct sockaddr_in server_addrs;
     int server_port = 6969;
     int server_ip=1; 
 

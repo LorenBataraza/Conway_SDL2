@@ -14,6 +14,9 @@
 # EXTERNAL cache entries
 ########################
 
+//Build tests
+BUILD_TESTS:BOOL=ON
+
 //Path to a program.
 CMAKE_ADDR2LINE:FILEPATH=/usr/bin/addr2line
 
@@ -200,6 +203,9 @@ CMAKE_STRIP:FILEPATH=/usr/bin/strip
 // during the make.  This is useful for debugging only. With Visual
 // Studio IDE projects all commands are done without /nologo.
 CMAKE_VERBOSE_MAKEFILE:BOOL=OFF
+
+//The directory containing a CMake configuration file for Catch2.
+Catch2_DIR:PATH=/usr/lib/cmake/Catch2
 
 //Value Computed by CMake
 ConwayLife_BINARY_DIR:STATIC=/home/lorenzo/Desktop/Proyectos/Conway_life_game/build

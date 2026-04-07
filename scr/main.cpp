@@ -14,6 +14,8 @@
 #include "grid.h"
 #include "main_menu.cpp"
 
+#include "client.cpp"
+
 #if !SDL_VERSION_ATLEAST(2,0,17)
 #error This backend requires SDL 2.0.17+ because of SDL_RenderGeometry() function
 #endif
@@ -24,7 +26,7 @@ using namespace std;
 #define FONT_PATH "../includes/Roboto-Regular.ttf"
 
 #define DEBUG_LOOP 0
-#define DEBUG_ZOOM 1
+#define DEBUG_ZOOM 0
 #define DEBUG_LOAD_ANIMATIONS 0
 
 SDL_Window* window;
@@ -39,8 +41,8 @@ viewpoint vp = {
 
 // En app_state está mi grid, necesito app_state.rows y COLUMNS
 AppState app_state(ROWS, COLS);
-
-time_t start_time;
+static Uint32 last_update; 
+Uint32 elapsed;
 
 bool init();
 bool loop();
@@ -141,7 +143,6 @@ ImGuiKey SDL_ScancodeToImGuiKey(SDL_Scancode scancode) {
 
 
 bool init() {
-	start_time = time(nullptr);
 
 	// Inicializar SDL
 	if ( SDL_Init( SDL_INIT_EVERYTHING ) < 0 ) {
@@ -224,8 +225,6 @@ bool init() {
 	// Guns
 	app_state.animations["glider_gun"] = std::move(load_gif("../includes/img/guns/glider_gun.gif", renderer));
 
-
-	// DBUG
 	if(DEBUG_LOAD_ANIMATIONS){
 		for (const auto& [name, anim] : app_state.animations) {
 			std::cout << "Cargado GIF: " << name 
@@ -237,6 +236,8 @@ bool init() {
 				};
 		}
 	}
+
+	last_update= SDL_GetTicks();
 	return true;
 }
 
@@ -335,7 +336,12 @@ bool loop() {
                 return false;
 
             case SDL_MOUSEBUTTONDOWN:
-				load_pattern_into_grid(app_state.current_pattern, window, app_state.grid, vp, ev.button.x, ev.button.y, app_state.rows, app_state.cols);
+				if(app_state.multiplayer==false)load_pattern_into_grid(app_state.current_pattern, window, app_state.grid, vp, ev.button.x, ev.button.y, app_state.rows, app_state.cols);
+				if(app_state.multiplayer==true){
+					int mouseX, mouseY;
+					SDL_GetMouseState(&mouseX, &mouseY);
+					send_pattern(&app_state, window, &vp, mouseX, mouseY);
+				}
                 break;
 			/*
             case SDL_MOUSEMOTION:
@@ -363,8 +369,8 @@ bool loop() {
                     case SDLK_ESCAPE:
                         kill();
                         break;
-                    case SDLK_a: 
-                        update_grid(app_state.grid, app_state.rows, app_state.cols);
+                    case SDLK_a:
+						if(app_state.multiplayer==false)update_grid(app_state.grid, app_state.rows, app_state.cols);
                         break;
                     case SDLK_e:
                         save_grid_txt(app_state.grid, app_state.rows, app_state.cols, "lastSave.txt");
@@ -377,13 +383,21 @@ bool loop() {
         }
     }
 	
-	if(app_state.run_sim){
-		double elapsed_time = difftime(time(nullptr), start_time);
-		if(elapsed_time>= 1/app_state.frecuencia){
-			if(DEBUG_LOOP)std::cout << "Acción ejecutada en t = " << elapsed_time << " segundos." << std::endl;
+	if(app_state.run_sim && !app_state.multiplayer) {
+		Uint32 current_ticks = SDL_GetTicks();  // Milisegundos desde que inició SDL
+		elapsed = current_ticks - last_update;
+		
+		if(elapsed >= (1000 / app_state.frecuencia)) {  // Conversión a milisegundos
+			if(DEBUG_LOOP) {
+				std::cout << "Update en " << elapsed << " ms\t" << "T= " << (1000 / app_state.frecuencia) << std::endl  ;
+			}
 			update_grid(app_state.grid, app_state.rows, app_state.cols);
-			start_time = time(nullptr);
+			last_update = current_ticks;  // Resetear contador
 		}
+	}
+
+	if(app_state.multiplayer) {
+		receive_update(&app_state); // Recibir actualizaciones
 	}
 
 	// Actualiza anim.current_frame para correr el gif
@@ -400,12 +414,13 @@ bool loop() {
 	ShowExampleAppMainMenuBar(&app_state);
 	
 	// Ventana Simulación 
-	if(app_state.showParameters){
+	if(app_state.showParameters && app_state.multiplayer==false){
 	ImGui::Begin("Parámetros",nullptr , ImGuiWindowFlags_NoMove|| ImGuiWindowFlags_NoCollapse || ImGuiWindowFlags_NoResize);
 	ImGui::Checkbox("Run", &app_state.run_sim);
-	ImGui::DragInt("Hz", &app_state.frecuencia, 1, 1, 10, "%d", ImGuiSliderFlags_AlwaysClamp);
+	ImGui::DragInt("Hz", &app_state.frecuencia, 1, 1, 60, "%d", ImGuiSliderFlags_AlwaysClamp);
     ImGui::Spacing();
 	ImGui::Text("Patron selecionado: %s", app_state.current_pattern.c_str());
+	ImGui::Text("fps: %d", 1000/elapsed);
 	ImGui::End();
 	}
 
@@ -534,12 +549,19 @@ bool loop() {
 
 	if(app_state.showMultiplayerConf){
 		ImGui::Begin("Configuración Multiplayeer",nullptr , ImGuiWindowFlags_NoCollapse || ImGuiWindowFlags_NoResize);
-		ImGui::Text("Estado de Conexión: Cerrada");
+		ImGui::Text("Estado de Conexión: %s", (app_state.multiplayer)?"Conectado":"Desconectado");
 		ImGui::Text("Puerto actual selecionado: %i", app_state.server_port);
 		ImGui::Text("IP actual: %i", app_state.server_ip);
+		
+		if(app_state.multiplayer==false){
+		if(ImGui::Button("Conectar", ImVec2(90.0,20.0))) {
+			init_conection(&app_state);
+		}
+		}
+
 		ImGui::End();
 	}
-	
+
 	// Renderizado
 	SDL_SetRenderDrawColor( renderer, 24, 24, 24, 255 ); 	 
 	SDL_RenderClear( renderer );						 		// Limpia la pantalla

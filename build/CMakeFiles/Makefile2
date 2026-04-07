@@ -66,6 +66,7 @@ CMAKE_BINARY_DIR = /home/lorenzo/Desktop/Proyectos/Conway_life_game/build
 all: CMakeFiles/imgui.dir/all
 all: CMakeFiles/Graphics.dir/all
 all: CMakeFiles/life_game.dir/all
+all: CMakeFiles/conway_server.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -76,6 +77,7 @@ preinstall:
 clean: CMakeFiles/imgui.dir/clean
 clean: CMakeFiles/Graphics.dir/clean
 clean: CMakeFiles/life_game.dir/clean
+clean: CMakeFiles/conway_server.dir/clean
 .PHONY : clean
 
 #=============================================================================
@@ -85,7 +87,7 @@ clean: CMakeFiles/life_game.dir/clean
 CMakeFiles/imgui.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/imgui.dir/build.make CMakeFiles/imgui.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/imgui.dir/build.make CMakeFiles/imgui.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles --progress-num=5,6,7,8,9,10,11 "Built target imgui"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles --progress-num=8,9,10,11,12,13,14 "Built target imgui"
 .PHONY : CMakeFiles/imgui.dir/all
 
 # Build rule for subdir invocation for target.
@@ -138,7 +140,7 @@ CMakeFiles/life_game.dir/all: CMakeFiles/imgui.dir/all
 CMakeFiles/life_game.dir/all: CMakeFiles/Graphics.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/life_game.dir/build.make CMakeFiles/life_game.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/life_game.dir/build.make CMakeFiles/life_game.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles --progress-num=12,13 "Built target life_game"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles --progress-num=15,16 "Built target life_game"
 .PHONY : CMakeFiles/life_game.dir/all
 
 # Build rule for subdir invocation for target.
@@ -156,6 +158,33 @@ life_game: CMakeFiles/life_game.dir/rule
 CMakeFiles/life_game.dir/clean:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/life_game.dir/build.make CMakeFiles/life_game.dir/clean
 .PHONY : CMakeFiles/life_game.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/conway_server.dir
+
+# All Build rule for target.
+CMakeFiles/conway_server.dir/all: CMakeFiles/imgui.dir/all
+CMakeFiles/conway_server.dir/all: CMakeFiles/Graphics.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conway_server.dir/build.make CMakeFiles/conway_server.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conway_server.dir/build.make CMakeFiles/conway_server.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles --progress-num=5,6,7 "Built target conway_server"
+.PHONY : CMakeFiles/conway_server.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/conway_server.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles 14
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/conway_server.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles 0
+.PHONY : CMakeFiles/conway_server.dir/rule
+
+# Convenience name for target.
+conway_server: CMakeFiles/conway_server.dir/rule
+.PHONY : conway_server
+
+# clean rule for target.
+CMakeFiles/conway_server.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/conway_server.dir/build.make CMakeFiles/conway_server.dir/clean
+.PHONY : CMakeFiles/conway_server.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

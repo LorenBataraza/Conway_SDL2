@@ -385,11 +385,83 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
   /usr/include/c++/12/bits/node_handle.h \
   /usr/include/c++/12/bits/unordered_map.h \
   /usr/include/c++/12/bits/erase_if.h \
+  /usr/include/arpa/inet.h \
+  /usr/include/netinet/in.h \
+  /usr/include/x86_64-linux-gnu/sys/socket.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h \
+  /usr/include/x86_64-linux-gnu/bits/socket.h \
+  /usr/include/x86_64-linux-gnu/bits/socket_type.h \
+  /usr/include/x86_64-linux-gnu/bits/sockaddr.h \
+  /usr/include/x86_64-linux-gnu/asm/socket.h \
+  /usr/include/asm-generic/socket.h \
+  /usr/include/linux/posix_types.h \
+  /usr/include/linux/stddef.h \
+  /usr/include/x86_64-linux-gnu/asm/posix_types.h \
+  /usr/include/x86_64-linux-gnu/asm/posix_types_64.h \
+  /usr/include/asm-generic/posix_types.h \
+  /usr/include/x86_64-linux-gnu/asm/bitsperlong.h \
+  /usr/include/asm-generic/bitsperlong.h \
+  /usr/include/x86_64-linux-gnu/asm/sockios.h \
+  /usr/include/asm-generic/sockios.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h \
+  /usr/include/x86_64-linux-gnu/bits/in.h \
   /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/grid.h \
-  /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/main_menu.cpp
+  /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/main_menu.cpp \
+  /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/client.cpp \
+  /usr/lib/gcc/x86_64-linux-gnu/12/include/stdbool.h \
+  /usr/include/c++/12/sstream \
+  /usr/include/c++/12/bits/sstream.tcc \
+  /usr/include/unistd.h \
+  /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
+  /usr/include/x86_64-linux-gnu/bits/environments.h \
+  /usr/include/x86_64-linux-gnu/bits/confname.h \
+  /usr/include/x86_64-linux-gnu/bits/getopt_posix.h \
+  /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
+  /usr/include/x86_64-linux-gnu/bits/unistd_ext.h \
+  /usr/include/linux/close_range.h \
+  /usr/include/fcntl.h \
+  /usr/include/x86_64-linux-gnu/bits/fcntl.h \
+  /usr/include/x86_64-linux-gnu/bits/fcntl-linux.h \
+  /usr/include/linux/falloc.h \
+  /usr/include/x86_64-linux-gnu/bits/stat.h \
+  /usr/include/x86_64-linux-gnu/bits/struct_stat.h
 
+
+/usr/include/x86_64-linux-gnu/bits/struct_stat.h:
+
+/usr/include/x86_64-linux-gnu/bits/stat.h:
+
+/usr/include/x86_64-linux-gnu/bits/fcntl-linux.h:
+
+/usr/include/fcntl.h:
+
+/usr/include/linux/close_range.h:
+
+/usr/include/x86_64-linux-gnu/bits/confname.h:
+
+/usr/include/x86_64-linux-gnu/bits/environments.h:
+
+/usr/include/unistd.h:
 
 /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/main_menu.cpp:
+
+/usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h:
+
+/usr/include/asm-generic/sockios.h:
+
+/usr/include/asm-generic/posix_types.h:
+
+/usr/include/linux/posix_types.h:
+
+/usr/include/x86_64-linux-gnu/bits/socket_type.h:
+
+/usr/include/x86_64-linux-gnu/bits/socket.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h:
+
+/usr/include/x86_64-linux-gnu/sys/socket.h:
+
+/usr/include/netinet/in.h:
 
 /usr/include/c++/12/bits/uses_allocator.h:
 
@@ -426,6 +498,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/include/assert.h:
 
 /usr/include/SDL2/SDL_joystick.h:
+
+/usr/include/asm-generic/socket.h:
 
 /usr/include/SDL2/SDL_keycode.h:
 
@@ -501,6 +575,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/mmintrin.h:
 
+/usr/include/x86_64-linux-gnu/asm/bitsperlong.h:
+
 /usr/lib/gcc/x86_64-linux-gnu/12/include/hresetintrin.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/xtestintrin.h:
@@ -515,11 +591,15 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/xsavecintrin.h:
 
+/usr/include/x86_64-linux-gnu/bits/posix_opt.h:
+
 /usr/lib/gcc/x86_64-linux-gnu/12/include/xsaveintrin.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/waitpkgintrin.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/uintrintrin.h:
+
+/usr/include/x86_64-linux-gnu/bits/getopt_core.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/tsxldtrkintrin.h:
 
@@ -544,6 +624,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/lib/gcc/x86_64-linux-gnu/12/include/mwaitxintrin.h:
 
 /usr/include/c++/12/bits/functexcept.h:
+
+/usr/include/x86_64-linux-gnu/bits/unistd_ext.h:
 
 /usr/include/c++/12/bits/new_allocator.h:
 
@@ -603,11 +685,15 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/SDL2/SDL_config.h:
 
+/usr/include/x86_64-linux-gnu/bits/getopt_posix.h:
+
 /usr/include/x86_64-linux-gnu/bits/setjmp.h:
 
 /usr/include/time.h:
 
 /usr/include/c++/12/bits/range_access.h:
+
+/usr/include/x86_64-linux-gnu/asm/posix_types_64.h:
 
 /usr/include/x86_64-linux-gnu/bits/cpu-set.h:
 
@@ -675,6 +761,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/c++/12/istream:
 
+/home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/client.cpp:
+
 /usr/include/x86_64-linux-gnu/c++/12/bits/c++locale.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/FILE.h:
@@ -686,6 +774,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/include/x86_64-linux-gnu/bits/stdio_lim.h:
 
 /usr/include/x86_64-linux-gnu/bits/stdint-intn.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/12/include/stdbool.h:
 
 /usr/include/x86_64-linux-gnu/bits/types.h:
 
@@ -706,6 +796,10 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h:
 
 /usr/include/c++/12/bits/ios_base.h:
+
+/usr/include/linux/falloc.h:
+
+/usr/include/x86_64-linux-gnu/bits/in.h:
 
 /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h:
 
@@ -738,6 +832,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/include/c++/12/bits/cxxabi_forced.h:
 
 /usr/include/c++/12/bits/stl_iterator_base_types.h:
+
+/usr/include/arpa/inet.h:
 
 /usr/include/SDL2/SDL_locale.h:
 
@@ -782,6 +878,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/include/pthread.h:
 
 /usr/include/c++/12/bits/stl_iterator_base_funcs.h:
+
+/usr/include/x86_64-linux-gnu/asm/posix_types.h:
 
 /usr/include/SDL2/SDL_version.h:
 
@@ -835,6 +933,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/c++/12/bits/exception.h:
 
+/usr/include/x86_64-linux-gnu/bits/fcntl.h:
+
 /usr/include/c++/12/bits/locale_classes.tcc:
 
 /usr/include/x86_64-linux-gnu/c++/12/bits/gthr.h:
@@ -885,6 +985,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/x86_64-linux-gnu/bits/types/clock_t.h:
 
+/usr/include/x86_64-linux-gnu/asm/sockios.h:
+
 /usr/include/math.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/__FILE.h:
@@ -898,6 +1000,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/include/SDL2/SDL_surface.h:
 
 /usr/include/c++/12/backward/binders.h:
+
+/usr/include/linux/stddef.h:
 
 /usr/include/c++/12/bits/cxxabi_init_exception.h:
 
@@ -945,6 +1049,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/c++/12/bits/ranges_base.h:
 
+/usr/include/x86_64-linux-gnu/asm/socket.h:
+
 /usr/include/x86_64-linux-gnu/sys/select.h:
 
 /usr/include/c++/12/bits/max_size_type.h:
@@ -985,6 +1091,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/x86_64-linux-gnu/bits/stdlib-float.h:
 
+/usr/include/asm-generic/bitsperlong.h:
+
 /usr/include/c++/12/ext/type_traits.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/sigset_t.h:
@@ -1024,6 +1132,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/include/c++/12/streambuf:
 
 /usr/include/c++/12/bits/streambuf.tcc:
+
+/usr/include/c++/12/sstream:
 
 /usr/include/c++/12/bits/basic_ios.h:
 
@@ -1087,6 +1197,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 
 /usr/include/c++/12/bits/specfun.h:
 
+/usr/include/c++/12/bits/sstream.tcc:
+
 /usr/lib/gcc/x86_64-linux-gnu/12/include/bmi2intrin.h:
 
 /usr/include/c++/12/limits:
@@ -1148,6 +1260,8 @@ CMakeFiles/life_game.dir/scr/main.cpp.o: /home/lorenzo/Desktop/Proyectos/Conway_
 /usr/lib/gcc/x86_64-linux-gnu/12/include/enqcmdintrin.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/fxsrintrin.h:
+
+/usr/include/x86_64-linux-gnu/bits/sockaddr.h:
 
 /usr/include/c++/12/bits/std_abs.h:
 

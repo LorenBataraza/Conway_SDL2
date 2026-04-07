@@ -875,6 +875,26 @@ CMakeFiles/Graphics.dir/scr/main_menu.cpp.o: /home/lorenzo/Desktop/Proyectos/Con
   /usr/include/c++/12/bits/node_handle.h \
   /usr/include/c++/12/bits/unordered_map.h \
   /usr/include/c++/12/bits/erase_if.h \
+  /usr/include/arpa/inet.h \
+  /usr/include/netinet/in.h \
+  /usr/include/x86_64-linux-gnu/sys/socket.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h \
+  /usr/include/x86_64-linux-gnu/bits/socket.h \
+  /usr/include/x86_64-linux-gnu/bits/socket_type.h \
+  /usr/include/x86_64-linux-gnu/bits/sockaddr.h \
+  /usr/include/x86_64-linux-gnu/asm/socket.h \
+  /usr/include/asm-generic/socket.h \
+  /usr/include/linux/posix_types.h \
+  /usr/include/linux/stddef.h \
+  /usr/include/x86_64-linux-gnu/asm/posix_types.h \
+  /usr/include/x86_64-linux-gnu/asm/posix_types_64.h \
+  /usr/include/asm-generic/posix_types.h \
+  /usr/include/x86_64-linux-gnu/asm/bitsperlong.h \
+  /usr/include/asm-generic/bitsperlong.h \
+  /usr/include/x86_64-linux-gnu/asm/sockios.h \
+  /usr/include/asm-generic/sockios.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h \
+  /usr/include/x86_64-linux-gnu/bits/in.h \
   /usr/include/SDL2/SDL.h \
   /usr/include/SDL2/SDL_main.h \
   /usr/include/SDL2/SDL_stdinc.h \
@@ -1044,6 +1064,22 @@ CMakeFiles/Graphics.dir/scr/main_menu.cpp.o: /home/lorenzo/Desktop/Proyectos/Con
   /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/grid.h
 
 
+/usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h:
+
+/usr/include/asm-generic/sockios.h:
+
+/usr/include/linux/posix_types.h:
+
+/usr/include/x86_64-linux-gnu/bits/socket_type.h:
+
+/usr/include/x86_64-linux-gnu/bits/socket.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h:
+
+/usr/include/x86_64-linux-gnu/sys/socket.h:
+
+/usr/include/netinet/in.h:
+
 /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/appState.h:
 
 /home/lorenzo/Desktop/Proyectos/Conway_life_game/scr/main_menu.cpp:
@@ -1057,6 +1093,8 @@ CMakeFiles/Graphics.dir/scr/main_menu.cpp.o: /home/lorenzo/Desktop/Proyectos/Con
 /usr/include/c++/12/bits/stl_bvector.h:
 
 /usr/include/c++/12/bits/stl_vector.h:
+
+/usr/include/asm-generic/posix_types.h:
 
 /usr/include/c++/12/bits/stl_heap.h:
 
@@ -1140,6 +1178,8 @@ CMakeFiles/Graphics.dir/scr/main_menu.cpp.o: /home/lorenzo/Desktop/Proyectos/Con
 
 /usr/include/time.h:
 
+/usr/include/x86_64-linux-gnu/asm/posix_types_64.h:
+
 /usr/include/x86_64-linux-gnu/bits/cpu-set.h:
 
 /usr/include/c++/12/bits/istream.tcc:
@@ -1184,6 +1224,8 @@ CMakeFiles/Graphics.dir/scr/main_menu.cpp.o: /home/lorenzo/Desktop/Proyectos/Con
 
 /usr/include/c++/12/bits/nested_exception.h:
 
+/usr/include/linux/stddef.h:
+
 /usr/include/c++/12/bits/cxxabi_init_exception.h:
 
 /usr/include/c++/12/bits/exception_ptr.h:
@@ -1207,6 +1249,8 @@ CMakeFiles/Graphics.dir/scr/main_menu.cpp.o: /home/lorenzo/Desktop/Proyectos/Con
 /usr/include/c++/12/bits/hash_bytes.h:
 
 /usr/include/SDL2/SDL_misc.h:
+
+/usr/include/arpa/inet.h:
 
 /usr/include/x86_64-linux-gnu/c++/12/bits/ctype_base.h:
 
@@ -1268,6 +1312,8 @@ CMakeFiles/Graphics.dir/scr/main_menu.cpp.o: /home/lorenzo/Desktop/Proyectos/Con
 
 /usr/include/x86_64-linux-gnu/c++/12/bits/c++config.h:
 
+/usr/include/x86_64-linux-gnu/bits/in.h:
+
 /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h:
 
 /usr/include/x86_64-linux-gnu/bits/math-vector.h:
@@ -1282,7 +1328,11 @@ CMakeFiles/Graphics.dir/scr/main_menu.cpp.o: /home/lorenzo/Desktop/Proyectos/Con
 
 /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h:
 
+/usr/include/x86_64-linux-gnu/asm/bitsperlong.h:
+
 /usr/lib/gcc/x86_64-linux-gnu/12/include/hresetintrin.h:
+
+/usr/include/x86_64-linux-gnu/asm/socket.h:
 
 /usr/include/c++/12/bits/max_size_type.h:
 
@@ -1416,6 +1466,8 @@ CMakeFiles/Graphics.dir/scr/main_menu.cpp.o: /home/lorenzo/Desktop/Proyectos/Con
 
 /usr/include/x86_64-linux-gnu/bits/time64.h:
 
+/usr/include/asm-generic/bitsperlong.h:
+
 /usr/include/c++/12/ext/type_traits.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/sigset_t.h:
@@ -1444,6 +1496,8 @@ CMakeFiles/Graphics.dir/scr/main_menu.cpp.o: /home/lorenzo/Desktop/Proyectos/Con
 
 /usr/include/c++/12/concepts:
 
+/usr/include/asm-generic/socket.h:
+
 /usr/include/SDL2/SDL_keycode.h:
 
 /home/lorenzo/Desktop/Proyectos/Conway_life_game/includes/imgui/imconfig.h:
@@ -1467,6 +1521,8 @@ CMakeFiles/Graphics.dir/scr/main_menu.cpp.o: /home/lorenzo/Desktop/Proyectos/Con
 /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h:
+
+/usr/include/x86_64-linux-gnu/asm/posix_types.h:
 
 /usr/include/SDL2/SDL_version.h:
 
@@ -1541,6 +1597,8 @@ CMakeFiles/Graphics.dir/scr/main_menu.cpp.o: /home/lorenzo/Desktop/Proyectos/Con
 /usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/clock_t.h:
+
+/usr/include/x86_64-linux-gnu/asm/sockios.h:
 
 /usr/include/math.h:
 
@@ -1655,6 +1713,8 @@ CMakeFiles/Graphics.dir/scr/main_menu.cpp.o: /home/lorenzo/Desktop/Proyectos/Con
 /usr/lib/gcc/x86_64-linux-gnu/12/include/enqcmdintrin.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/fxsrintrin.h:
+
+/usr/include/x86_64-linux-gnu/bits/sockaddr.h:
 
 /usr/include/c++/12/bits/std_abs.h:
 

@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -shared -Wl,-soname,libGraphics.so -o libGraphics.so CMakeFiles/Graphics.dir/scr/grid.cpp.o CMakeFiles/Graphics.dir/scr/dotted_line.cpp.o CMakeFiles/Graphics.dir/scr/main_menu.cpp.o  -lSDL2 -lSDL2_ttf -lSDL2 -lSDL2_image -lSDL2 libimgui.a -lSDL2_ttf -lSDL2_image 

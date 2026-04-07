@@ -45,4 +45,5 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/imgui.dir/DependInfo.cmake"
   "CMakeFiles/Graphics.dir/DependInfo.cmake"
   "CMakeFiles/life_game.dir/DependInfo.cmake"
+  "CMakeFiles/conway_server.dir/DependInfo.cmake"
   )

@@ -67,6 +67,10 @@
         "semaphore": "cpp",
         "stop_token": "cpp",
         "thread": "cpp",
-        "clay-video-demo.c": "cpp"
+        "clay-video-demo.c": "cpp",
+        "bitset": "cpp",
+        "regex": "cpp",
+        "future": "cpp",
+        "variant": "cpp"
     }
 }
