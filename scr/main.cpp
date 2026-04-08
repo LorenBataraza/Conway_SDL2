@@ -121,10 +121,66 @@ void update_animation(Animation& anim) {
 
 ImGuiKey SDL_ScancodeToImGuiKey(SDL_Scancode scancode) {
     switch (scancode) {
+        // Letras
         case SDL_SCANCODE_A: return ImGuiKey_A;
+        case SDL_SCANCODE_B: return ImGuiKey_B;
+        case SDL_SCANCODE_C: return ImGuiKey_C;
+        case SDL_SCANCODE_D: return ImGuiKey_D;
         case SDL_SCANCODE_E: return ImGuiKey_E;
+        case SDL_SCANCODE_F: return ImGuiKey_F;
+        case SDL_SCANCODE_G: return ImGuiKey_G;
+        case SDL_SCANCODE_H: return ImGuiKey_H;
+        case SDL_SCANCODE_I: return ImGuiKey_I;
+        case SDL_SCANCODE_J: return ImGuiKey_J;
+        case SDL_SCANCODE_K: return ImGuiKey_K;
         case SDL_SCANCODE_L: return ImGuiKey_L;
         case SDL_SCANCODE_M: return ImGuiKey_M;
+        case SDL_SCANCODE_N: return ImGuiKey_N;
+        case SDL_SCANCODE_O: return ImGuiKey_O;
+        case SDL_SCANCODE_P: return ImGuiKey_P;
+        case SDL_SCANCODE_Q: return ImGuiKey_Q;
+        case SDL_SCANCODE_R: return ImGuiKey_R;
+        case SDL_SCANCODE_S: return ImGuiKey_S;
+        case SDL_SCANCODE_T: return ImGuiKey_T;
+        case SDL_SCANCODE_U: return ImGuiKey_U;
+        case SDL_SCANCODE_V: return ImGuiKey_V;
+        case SDL_SCANCODE_W: return ImGuiKey_W;
+        case SDL_SCANCODE_X: return ImGuiKey_X;
+        case SDL_SCANCODE_Y: return ImGuiKey_Y;
+        case SDL_SCANCODE_Z: return ImGuiKey_Z;
+        
+        // Números
+        case SDL_SCANCODE_0: return ImGuiKey_0;
+        case SDL_SCANCODE_1: return ImGuiKey_1;
+        case SDL_SCANCODE_2: return ImGuiKey_2;
+        case SDL_SCANCODE_3: return ImGuiKey_3;
+        case SDL_SCANCODE_4: return ImGuiKey_4;
+        case SDL_SCANCODE_5: return ImGuiKey_5;
+        case SDL_SCANCODE_6: return ImGuiKey_6;
+        case SDL_SCANCODE_7: return ImGuiKey_7;
+        case SDL_SCANCODE_8: return ImGuiKey_8;
+        case SDL_SCANCODE_9: return ImGuiKey_9;
+        
+        // Teclas de edición
+        case SDL_SCANCODE_BACKSPACE: return ImGuiKey_Backspace;
+        case SDL_SCANCODE_DELETE: return ImGuiKey_Delete;
+        case SDL_SCANCODE_RETURN: return ImGuiKey_Enter;
+        case SDL_SCANCODE_KP_ENTER: return ImGuiKey_KeypadEnter;
+        case SDL_SCANCODE_TAB: return ImGuiKey_Tab;
+        case SDL_SCANCODE_SPACE: return ImGuiKey_Space;
+        case SDL_SCANCODE_INSERT: return ImGuiKey_Insert;
+        
+        // Navegación
+        case SDL_SCANCODE_LEFT: return ImGuiKey_LeftArrow;
+        case SDL_SCANCODE_RIGHT: return ImGuiKey_RightArrow;
+        case SDL_SCANCODE_UP: return ImGuiKey_UpArrow;
+        case SDL_SCANCODE_DOWN: return ImGuiKey_DownArrow;
+        case SDL_SCANCODE_HOME: return ImGuiKey_Home;
+        case SDL_SCANCODE_END: return ImGuiKey_End;
+        case SDL_SCANCODE_PAGEUP: return ImGuiKey_PageUp;
+        case SDL_SCANCODE_PAGEDOWN: return ImGuiKey_PageDown;
+        
+        // Modificadores
         case SDL_SCANCODE_ESCAPE: return ImGuiKey_Escape;
         case SDL_SCANCODE_LCTRL: return ImGuiKey_LeftCtrl;
         case SDL_SCANCODE_RCTRL: return ImGuiKey_RightCtrl;
@@ -132,6 +188,34 @@ ImGuiKey SDL_ScancodeToImGuiKey(SDL_Scancode scancode) {
         case SDL_SCANCODE_RSHIFT: return ImGuiKey_RightShift;
         case SDL_SCANCODE_LALT: return ImGuiKey_LeftAlt;
         case SDL_SCANCODE_RALT: return ImGuiKey_RightAlt;
+        
+        // Teclas de función
+        case SDL_SCANCODE_F1: return ImGuiKey_F1;
+        case SDL_SCANCODE_F2: return ImGuiKey_F2;
+        case SDL_SCANCODE_F3: return ImGuiKey_F3;
+        case SDL_SCANCODE_F4: return ImGuiKey_F4;
+        case SDL_SCANCODE_F5: return ImGuiKey_F5;
+        case SDL_SCANCODE_F6: return ImGuiKey_F6;
+        case SDL_SCANCODE_F7: return ImGuiKey_F7;
+        case SDL_SCANCODE_F8: return ImGuiKey_F8;
+        case SDL_SCANCODE_F9: return ImGuiKey_F9;
+        case SDL_SCANCODE_F10: return ImGuiKey_F10;
+        case SDL_SCANCODE_F11: return ImGuiKey_F11;
+        case SDL_SCANCODE_F12: return ImGuiKey_F12;
+        
+        // Símbolos comunes
+        case SDL_SCANCODE_MINUS: return ImGuiKey_Minus;
+        case SDL_SCANCODE_EQUALS: return ImGuiKey_Equal;
+        case SDL_SCANCODE_LEFTBRACKET: return ImGuiKey_LeftBracket;
+        case SDL_SCANCODE_RIGHTBRACKET: return ImGuiKey_RightBracket;
+        case SDL_SCANCODE_BACKSLASH: return ImGuiKey_Backslash;
+        case SDL_SCANCODE_SEMICOLON: return ImGuiKey_Semicolon;
+        case SDL_SCANCODE_APOSTROPHE: return ImGuiKey_Apostrophe;
+        case SDL_SCANCODE_COMMA: return ImGuiKey_Comma;
+        case SDL_SCANCODE_PERIOD: return ImGuiKey_Period;
+        case SDL_SCANCODE_SLASH: return ImGuiKey_Slash;
+        case SDL_SCANCODE_GRAVE: return ImGuiKey_GraveAccent;
+        
         default: return ImGuiKey_None;
     }
 }
@@ -261,6 +345,10 @@ bool loop() {
                 io.AddKeyEvent(ImGuiKey_ModAlt, (SDL_GetModState() & KMOD_ALT) != 0);
                 break;
             }
+            case SDL_TEXTINPUT:
+                // Necesario para que ImGui reciba los caracteres escritos
+                io.AddInputCharactersUTF8(ev.text.text);
+                break;
         }
     }
 
@@ -275,6 +363,7 @@ bool loop() {
                 skipEvent = io.WantCaptureMouse;
                 break;
             case SDL_KEYDOWN:
+            case SDL_TEXTINPUT:
                 skipEvent = io.WantCaptureKeyboard;
                 break;
         }
