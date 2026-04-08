@@ -291,7 +291,9 @@ bool loop() {
                                           app_state.grid, vp, 
                                           ev.button.x, ev.button.y, 
                                           app_state.rows, app_state.cols,
-                                          app_state.player_id);
+                                          app_state.player_id,
+                                          app_state.mirror_horizontal,
+                                          app_state.mirror_vertical);
                 } else {
                     send_pattern(&app_state, window, &vp, ev.button.x, ev.button.y);
                 }
@@ -336,6 +338,12 @@ bool loop() {
                         break;
                     case SDLK_c:
                         clear_grid(app_state.grid, app_state.rows, app_state.cols);
+                        break;
+                    case SDLK_h:
+                        app_state.mirror_horizontal = !app_state.mirror_horizontal;
+                        break;
+                    case SDLK_v:
+                        app_state.mirror_vertical = !app_state.mirror_vertical;
                         break;
                 }
                 break;
@@ -521,6 +529,9 @@ bool loop() {
                           ? ImVec4(0.3f, 0.3f, 0.3f, 0.5f) 
                           : (selected ? ImVec4(1,1,1,1) : ImVec4(0.7f, 0.7f, 0.7f, 0.8f));
             
+            // Guardar posición antes del botón
+            ImVec2 btn_pos = ImGui::GetCursorScreenPos();
+            
             if (ImGui::ImageButton(
                 name,
                 (ImTextureID)app_state.patterns[name],
@@ -534,7 +545,36 @@ bool loop() {
                 }
             }
             
-            // Tooltip con costo
+            // Dibujar costo en esquina inferior derecha
+            if (app_state.game_mode == AppState::GameMode::COMPETITION) {
+                ImDrawList* draw_list = ImGui::GetWindowDrawList();
+                char cost_str[16];
+                snprintf(cost_str, sizeof(cost_str), "%d", cost);
+                ImVec2 text_size = ImGui::CalcTextSize(cost_str);
+                
+                // Posición: esquina inferior derecha del botón
+                float padding = ImGui::GetStyle().FramePadding.x;
+                ImVec2 text_pos(
+                    btn_pos.x + button_size.x + padding * 2 - text_size.x - 4,
+                    btn_pos.y + button_size.y + padding * 2 - text_size.y - 2
+                );
+                
+                // Fondo semitransparente
+                draw_list->AddRectFilled(
+                    ImVec2(text_pos.x - 2, text_pos.y - 1),
+                    ImVec2(text_pos.x + text_size.x + 2, text_pos.y + text_size.y + 1),
+                    IM_COL32(0, 0, 0, 180),
+                    2.0f
+                );
+                
+                // Texto del costo
+                ImU32 cost_col = can_buy 
+                    ? IM_COL32(100, 255, 100, 255)
+                    : IM_COL32(255, 100, 100, 255);
+                draw_list->AddText(text_pos, cost_col, cost_str);
+            }
+            
+            // Tooltip
             if (ImGui::IsItemHovered()) {
                 if (app_state.game_mode == AppState::GameMode::COMPETITION) {
                     ImGui::SetTooltip("%s\nCosto: %d pts\n%s", 
@@ -543,14 +583,6 @@ bool loop() {
                 } else {
                     ImGui::SetTooltip("%s", tooltip);
                 }
-            }
-            
-            // Indicador de costo debajo del botón
-            if (app_state.game_mode == AppState::GameMode::COMPETITION) {
-                ImVec4 cost_color = can_buy 
-                    ? ImVec4(0.3f, 0.8f, 0.3f, 1.0f) 
-                    : ImVec4(0.8f, 0.3f, 0.3f, 1.0f);
-                ImGui::TextColored(cost_color, "%d", cost);
             }
             
             ImGui::PopID();
@@ -580,6 +612,9 @@ bool loop() {
                           ? ImVec4(0.3f, 0.3f, 0.3f, 0.5f) 
                           : (selected ? ImVec4(1,1,1,1) : ImVec4(0.7f, 0.7f, 0.7f, 0.8f));
             
+            // Guardar posición antes del botón
+            ImVec2 btn_pos = ImGui::GetCursorScreenPos();
+            
             if (ImGui::ImageButton(
                 name,
                 (ImTextureID)anim.frames[anim.current_frame],
@@ -593,6 +628,35 @@ bool loop() {
                 }
             }
             
+            // Dibujar costo en esquina inferior derecha
+            if (app_state.game_mode == AppState::GameMode::COMPETITION) {
+                ImDrawList* draw_list = ImGui::GetWindowDrawList();
+                char cost_str[16];
+                snprintf(cost_str, sizeof(cost_str), "%d", cost);
+                ImVec2 text_size = ImGui::CalcTextSize(cost_str);
+                
+                float padding = ImGui::GetStyle().FramePadding.x;
+                ImVec2 text_pos(
+                    btn_pos.x + size.x + padding * 2 - text_size.x - 4,
+                    btn_pos.y + size.y + padding * 2 - text_size.y - 2
+                );
+                
+                // Fondo semitransparente
+                draw_list->AddRectFilled(
+                    ImVec2(text_pos.x - 2, text_pos.y - 1),
+                    ImVec2(text_pos.x + text_size.x + 2, text_pos.y + text_size.y + 1),
+                    IM_COL32(0, 0, 0, 180),
+                    2.0f
+                );
+                
+                // Texto del costo
+                ImU32 cost_col = can_buy 
+                    ? IM_COL32(100, 255, 100, 255)
+                    : IM_COL32(255, 100, 100, 255);
+                draw_list->AddText(text_pos, cost_col, cost_str);
+            }
+            
+            // Tooltip
             if (ImGui::IsItemHovered()) {
                 if (app_state.game_mode == AppState::GameMode::COMPETITION) {
                     ImGui::SetTooltip("%s\nCosto: %d pts\n%s", 
@@ -603,16 +667,57 @@ bool loop() {
                 }
             }
             
-            // Indicador de costo
-            if (app_state.game_mode == AppState::GameMode::COMPETITION) {
-                ImVec4 cost_color = can_buy 
-                    ? ImVec4(0.3f, 0.8f, 0.3f, 1.0f) 
-                    : ImVec4(0.8f, 0.3f, 0.3f, 1.0f);
-                ImGui::TextColored(cost_color, "%d", cost);
-            }
-            
             ImGui::PopID();
         };
+
+        // === CONTROLES DE ESPEJADO ===
+        ImGui::Text("Espejado:");
+        ImGui::SameLine();
+        
+        // Botón espejado horizontal
+        bool was_mirror_h = app_state.mirror_horizontal;
+        if (was_mirror_h) {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.5f, 0.8f, 1.0f));
+        }
+        if (ImGui::Button("H##mirror_h", ImVec2(30, 25))) {
+            app_state.mirror_horizontal = !app_state.mirror_horizontal;
+        }
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Espejo Horizontal (izq/der)");
+        }
+        if (was_mirror_h) {
+            ImGui::PopStyleColor();
+        }
+        
+        ImGui::SameLine();
+        
+        // Botón espejado vertical
+        bool was_mirror_v = app_state.mirror_vertical;
+        if (was_mirror_v) {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.5f, 0.8f, 1.0f));
+        }
+        if (ImGui::Button("V##mirror_v", ImVec2(30, 25))) {
+            app_state.mirror_vertical = !app_state.mirror_vertical;
+        }
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Espejo Vertical (arriba/abajo)");
+        }
+        if (was_mirror_v) {
+            ImGui::PopStyleColor();
+        }
+        
+        ImGui::SameLine();
+        
+        // Botón reset espejado
+        if (ImGui::Button("Reset##mirror_reset", ImVec2(50, 25))) {
+            app_state.mirror_horizontal = false;
+            app_state.mirror_vertical = false;
+        }
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Quitar espejado");
+        }
+        
+        ImGui::Separator();
 
         if (ImGui::TreeNode("Still Life")) {
             pattern_button("block", "Block (2x2)");
@@ -657,7 +762,80 @@ bool loop() {
         ImGui::End();
     }
 
-    // ============== BARRA DE PUNTOS INFERIOR ==============
+    // ============== HUD SUPERIOR (info del jugador) ==============
+    if (app_state.showPlayerHUD && app_state.multiplayer && 
+        app_state.game_mode == AppState::GameMode::COMPETITION) {
+        
+        ImGuiWindowFlags hud_flags = 
+            ImGuiWindowFlags_NoTitleBar | 
+            ImGuiWindowFlags_NoResize | 
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoScrollbar |
+            ImGuiWindowFlags_NoSavedSettings |
+            ImGuiWindowFlags_AlwaysAutoResize;
+        
+        ImGui::SetNextWindowPos(ImVec2(10, 30));
+        ImGui::SetNextWindowBgAlpha(0.85f);
+        
+        ImGui::Begin("##PlayerHUD", nullptr, hud_flags);
+        
+        SDL_Color my_color = get_player_color(app_state.player_id);
+        ImVec4 color_vec(my_color.r/255.0f, my_color.g/255.0f, my_color.b/255.0f, 1.0f);
+        
+        // Header con color
+        ImGui::TextColored(color_vec, "■ Jugador %d", app_state.player_id);
+        ImGui::Separator();
+        
+        // Victoria
+        ImGui::Text("Victoria:");
+        ImGui::SameLine(100);
+        ImGui::TextColored(ImVec4(0.9f, 0.8f, 0.2f, 1.0f), "%d / %d", 
+                          app_state.my_victory(), app_state.victory_goal);
+        
+        // Consumo
+        ImGui::Text("Consumo:");
+        ImGui::SameLine(100);
+        ImGui::TextColored(ImVec4(0.3f, 0.7f, 0.9f, 1.0f), "%d", app_state.my_consumption());
+        
+        // Celdas
+        ImGui::Text("Celdas:");
+        ImGui::SameLine(100);
+        ImGui::TextColored(color_vec, "%d", app_state.my_cells());
+        
+        // Patrón actual
+        ImGui::Separator();
+        int cost = get_pattern_cost(app_state.current_pattern);
+        bool can_buy = app_state.can_afford(cost);
+        
+        ImGui::Text("Patrón:");
+        ImGui::SameLine(100);
+        ImGui::Text("%s", app_state.current_pattern.c_str());
+        
+        ImGui::Text("Costo:");
+        ImGui::SameLine(100);
+        if (can_buy) {
+            ImGui::TextColored(ImVec4(0.3f, 0.9f, 0.3f, 1.0f), "%d", cost);
+        } else {
+            ImGui::TextColored(ImVec4(0.9f, 0.3f, 0.3f, 1.0f), "%d (sin puntos)", cost);
+        }
+        
+        // Indicadores de espejado
+        if (app_state.mirror_horizontal || app_state.mirror_vertical) {
+            ImGui::Text("Espejo:");
+            ImGui::SameLine(100);
+            if (app_state.mirror_horizontal) {
+                ImGui::TextColored(ImVec4(0.5f, 0.8f, 1.0f, 1.0f), "[H]");
+                ImGui::SameLine();
+            }
+            if (app_state.mirror_vertical) {
+                ImGui::TextColored(ImVec4(0.5f, 0.8f, 1.0f, 1.0f), "[V]");
+            }
+        }
+        
+        ImGui::End();
+    }
+
+    // ============== BARRA DE VICTORIA DE TODOS LOS JUGADORES ==============
     if (app_state.showScoreBar && app_state.multiplayer && 
         app_state.game_mode == AppState::GameMode::COMPETITION) {
         
@@ -668,76 +846,84 @@ bool loop() {
             ImGuiWindowFlags_NoScrollbar |
             ImGuiWindowFlags_NoSavedSettings;
         
-        float bar_height = 60.0f;
+        // Contar jugadores activos
+        int active_count = 0;
+        for (int i = 1; i <= AppState::MAX_PLAYERS; i++) {
+            if (app_state.player_scores[i].active) active_count++;
+        }
+        
+        // Altura de la barra según jugadores
+        float bar_per_player = 22.0f;
+        float bar_height = 10.0f + active_count * bar_per_player;
+        
         ImGui::SetNextWindowPos(ImVec2(0, window_height - bar_height));
         ImGui::SetNextWindowSize(ImVec2(window_width, bar_height));
-        ImGui::SetNextWindowBgAlpha(0.85f);
+        ImGui::SetNextWindowBgAlpha(0.9f);
         
         ImGui::Begin("##ScoreBar", nullptr, bar_flags);
         
-        // Mi info (izquierda)
-        ImGui::BeginGroup();
-        {
-            SDL_Color my_color = get_player_color(app_state.player_id);
-            ImVec4 color_vec(my_color.r/255.0f, my_color.g/255.0f, my_color.b/255.0f, 1.0f);
-            
-            ImGui::TextColored(color_vec, "Jugador %d", app_state.player_id);
-            
-            // Barra de consumo
-            float consumption_ratio = app_state.my_consumption() / 200.0f;
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.2f, 0.6f, 0.9f, 1.0f));
-            ImGui::ProgressBar(consumption_ratio, ImVec2(150, 18), "");
-            ImGui::PopStyleColor();
-            ImGui::SameLine();
-            ImGui::Text("Consumo: %d", app_state.my_consumption());
-            
-            // Barra de victoria
-            float victory_ratio = static_cast<float>(app_state.my_victory()) / app_state.victory_goal;
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.9f, 0.7f, 0.2f, 1.0f));
-            ImGui::ProgressBar(victory_ratio, ImVec2(150, 18), "");
-            ImGui::PopStyleColor();
-            ImGui::SameLine();
-            ImGui::Text("Victoria: %d/%d", app_state.my_victory(), app_state.victory_goal);
-        }
-        ImGui::EndGroup();
+        ImDrawList* draw_list = ImGui::GetWindowDrawList();
+        float bar_width = window_width - 20.0f;
+        float y_offset = 5.0f;
         
-        ImGui::SameLine(300);
-        
-        // Otros jugadores (derecha)
-        ImGui::BeginGroup();
-        {
-            ImGui::Text("Jugadores:");
-            ImGui::SameLine();
+        // Dibujar barra para cada jugador activo
+        for (int i = 1; i <= AppState::MAX_PLAYERS; i++) {
+            if (!app_state.player_scores[i].active) continue;
             
-            for (int i = 1; i <= AppState::MAX_PLAYERS; i++) {
-                if (!app_state.player_scores[i].active) continue;
-                if (i == app_state.player_id) continue;  // Ya mostré el mío
-                
-                SDL_Color p_color = get_player_color(i);
-                ImVec4 color_vec(p_color.r/255.0f, p_color.g/255.0f, p_color.b/255.0f, 1.0f);
-                
-                ImGui::SameLine();
-                ImGui::TextColored(color_vec, "[P%d: %d]", 
-                                  i, app_state.player_scores[i].victory_points);
+            SDL_Color p_color = get_player_color(i);
+            float victory_ratio = static_cast<float>(app_state.player_scores[i].victory_points) 
+                                 / app_state.victory_goal;
+            
+            ImVec2 bar_pos(10, window_height - bar_height + y_offset);
+            
+            // Fondo de la barra
+            draw_list->AddRectFilled(
+                bar_pos, 
+                ImVec2(bar_pos.x + bar_width, bar_pos.y + 16),
+                IM_COL32(30, 30, 30, 200),
+                3.0f
+            );
+            
+            // Barra de progreso del color del jugador
+            float progress_width = bar_width * std::min(1.0f, victory_ratio);
+            if (progress_width > 0) {
+                // Barra más brillante para el jugador local
+                Uint8 alpha = (i == app_state.player_id) ? 255 : 180;
+                draw_list->AddRectFilled(
+                    bar_pos, 
+                    ImVec2(bar_pos.x + progress_width, bar_pos.y + 16),
+                    IM_COL32(p_color.r, p_color.g, p_color.b, alpha),
+                    3.0f
+                );
             }
-        }
-        ImGui::EndGroup();
-        
-        // Costo del patrón actual (centro-derecha)
-        ImGui::SameLine(window_width - 200);
-        {
-            int cost = get_pattern_cost(app_state.current_pattern);
-            bool can_buy = app_state.can_afford(cost);
             
-            ImGui::Text("Patrón: %s", app_state.current_pattern.c_str());
-            
-            if (can_buy) {
-                ImGui::TextColored(ImVec4(0.3f, 0.9f, 0.3f, 1.0f), 
-                                  "Costo: %d (OK)", cost);
+            // Borde (más grueso para jugador local)
+            if (i == app_state.player_id) {
+                draw_list->AddRect(
+                    bar_pos, 
+                    ImVec2(bar_pos.x + bar_width, bar_pos.y + 16),
+                    IM_COL32(255, 255, 255, 200),
+                    3.0f, 0, 2.0f
+                );
             } else {
-                ImGui::TextColored(ImVec4(0.9f, 0.3f, 0.3f, 1.0f), 
-                                  "Costo: %d (SIN PUNTOS)", cost);
+                draw_list->AddRect(
+                    bar_pos, 
+                    ImVec2(bar_pos.x + bar_width, bar_pos.y + 16),
+                    IM_COL32(80, 80, 80, 150),
+                    3.0f
+                );
             }
+            
+            // Texto: "P1: 1234" a la izquierda
+            char label[32];
+            snprintf(label, sizeof(label), "P%d: %d", i, app_state.player_scores[i].victory_points);
+            draw_list->AddText(
+                ImVec2(bar_pos.x + 5, bar_pos.y + 1),
+                IM_COL32(255, 255, 255, 255),
+                label
+            );
+            
+            y_offset += bar_per_player;
         }
         
         ImGui::End();
@@ -747,8 +933,20 @@ bool loop() {
     SDL_SetRenderDrawColor(renderer, 20, 20, 25, 255);
     SDL_RenderClear(renderer);
 
-    // Renderizar grilla
-    print_grid(window, renderer, app_state.grid, vp, app_state.rows, app_state.cols);
+    // Renderizar grilla (con zonas si está en modo competición multiplayer)
+    if (app_state.multiplayer && app_state.game_mode == AppState::GameMode::COMPETITION) {
+        // Contar jugadores activos
+        int active_players = 0;
+        for (int i = 1; i <= AppState::MAX_PLAYERS; i++) {
+            if (app_state.player_scores[i].active) active_players++;
+        }
+        
+        print_grid_with_zones(window, renderer, app_state.grid, vp, 
+                             app_state.rows, app_state.cols,
+                             app_state.player_id, active_players, true);
+    } else {
+        print_grid(window, renderer, app_state.grid, vp, app_state.rows, app_state.cols);
+    }
 
     // Renderizar minimapa (solo si hay zoom)
     if (app_state.showMinimap && is_zoomed(vp)) {

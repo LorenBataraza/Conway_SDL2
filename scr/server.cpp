@@ -38,7 +38,7 @@ constexpr int MAX_CLIENTS = 10;
 constexpr int MAX_PLAYERS = 8;
 constexpr int INITIAL_CONSUMPTION = 200;  // Puntos iniciales de consumo
 constexpr int CONSUMPTION_REGEN = 2;       // Regeneración por tick
-constexpr int VICTORY_GOAL = 100000;         // Puntos para ganar
+constexpr int VICTORY_GOAL = 60000;        // Puntos para ganar (60x más)
 
 // ==================== MODOS DE JUEGO ====================
 
@@ -523,24 +523,83 @@ bool receive_command(int client_socket, ServerState& state) {
     
     // ========== ADD_PATTERN ==========
     char pattern[50];
-    int row, col, req_player_id;
-    if (sscanf(buffer, "ADD_PATTERN %49s %d %d %d", pattern, &row, &col, &req_player_id) >= 3) {
+    int row, col, req_player_id, mirror_h = 0, mirror_v = 0;
+    int parsed = sscanf(buffer, "ADD_PATTERN %49s %d %d %d %d %d", 
+                        pattern, &row, &col, &req_player_id, &mirror_h, &mirror_v);
+    if (parsed >= 3) {
         if (pattern_exists(pattern)) {
             const auto& pattern_data = PatternRegistry::instance().get(pattern);
             int cost = pattern_data.cost;
             
-            // Verificar si tiene suficientes puntos de consumo
+            // Calcular bounding box del patrón para espejado
+            int min_dx = 0, max_dx = 0, min_dy = 0, max_dy = 0;
+            for (const auto& [dx, dy] : pattern_data.cells) {
+                min_dx = std::min(min_dx, dx);
+                max_dx = std::max(max_dx, dx);
+                min_dy = std::min(min_dy, dy);
+                max_dy = std::max(max_dy, dy);
+            }
+            int width = max_dx - min_dx;
+            int height = max_dy - min_dy;
+            
+            // Generar celdas con espejado aplicado
+            std::vector<std::pair<int, int>> transformed_cells;
+            for (const auto& [dx, dy] : pattern_data.cells) {
+                int tx = dx;
+                int ty = dy;
+                
+                // Espejado horizontal (invertir X)
+                if (mirror_h) {
+                    tx = max_dx - (dx - min_dx);
+                }
+                // Espejado vertical (invertir Y)
+                if (mirror_v) {
+                    ty = max_dy - (dy - min_dy);
+                }
+                
+                transformed_cells.push_back({tx, ty});
+            }
+            
+            // Verificar modo competición
             if (state.game_mode == GameMode::COMPETITION) {
+                // Verificar si tiene suficientes puntos de consumo
                 if (state.players[player_id].consumption_points < cost) {
-                    // No tiene suficientes puntos
                     send_to_client(client_socket, "ERROR NOT_ENOUGH_POINTS\n");
                     return true;
                 }
+                
+                // Verificar número válido de jugadores para zonas
+                int active_players = 0;
+                for (int i = 1; i <= MAX_PLAYERS; i++) {
+                    if (state.players[i].connected) active_players++;
+                }
+                
+                // Si hay 2,4,6,8 jugadores, verificar zona de spawn
+                if (is_valid_player_count(active_players)) {
+                    SpawnZone zone = get_spawn_zone(player_id, active_players, state.rows, state.cols);
+                    
+                    // Verificar que TODAS las celdas transformadas estén en la zona
+                    bool all_in_zone = true;
+                    for (const auto& [dx, dy] : transformed_cells) {
+                        int x = col + dx;
+                        int y = row + dy;
+                        if (!zone.contains(y, x)) {
+                            all_in_zone = false;
+                            break;
+                        }
+                    }
+                    
+                    if (!all_in_zone) {
+                        send_to_client(client_socket, "ERROR OUTSIDE_ZONE\n");
+                        return true;
+                    }
+                }
+                
                 state.players[player_id].consumption_points -= cost;
             }
             
-            // Colocar patrón
-            for (const auto& [dx, dy] : pattern_data.cells) {
+            // Colocar patrón transformado
+            for (const auto& [dx, dy] : transformed_cells) {
                 int x = col + dx;
                 int y = row + dy;
                 if (x >= 0 && x < state.cols && y >= 0 && y < state.rows) {
@@ -550,7 +609,8 @@ bool receive_command(int client_socket, ServerState& state) {
             
             if (DEBUG_RECV) {
                 std::cout << "[PATTERN] " << pattern << " at (" << row << "," << col 
-                          << ") by player " << player_id << " cost=" << cost << "\n";
+                          << ") by player " << player_id << " cost=" << cost 
+                          << " mirror_h=" << mirror_h << " mirror_v=" << mirror_v << "\n";
             }
         }
         return true;

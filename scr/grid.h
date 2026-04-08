@@ -8,6 +8,107 @@
 inline constexpr int GRID_ROWS = 200;
 inline constexpr int GRID_COLS = 400;
 
+// ==================== ZONAS DE SPAWN ====================
+
+struct SpawnZone {
+    int start_row, end_row;
+    int start_col, end_col;
+    
+    bool contains(int row, int col) const {
+        return row >= start_row && row < end_row &&
+               col >= start_col && col < end_col;
+    }
+};
+
+// Calcula la zona de spawn para un jugador dado el número total de jugadores
+// Retorna zona vacía si el número de jugadores no es válido (debe ser 2,4,6,8)
+inline SpawnZone get_spawn_zone(int player_id, int num_players, int rows, int cols) {
+    SpawnZone zone = {0, 0, 0, 0};
+    
+    // Solo permitir 2, 4, 6, 8 jugadores
+    if (num_players != 2 && num_players != 4 && num_players != 6 && num_players != 8) {
+        // Modo libre: toda la grilla
+        zone.start_row = 0;
+        zone.end_row = rows;
+        zone.start_col = 0;
+        zone.end_col = cols;
+        return zone;
+    }
+    
+    // Ajustar player_id a índice 0-based
+    int idx = player_id - 1;
+    if (idx < 0 || idx >= num_players) {
+        return zone;  // Zona inválida
+    }
+    
+    switch (num_players) {
+        case 2: {
+            // Mitad-Mitad (división vertical)
+            // Jugador 1: izquierda, Jugador 2: derecha
+            int half_col = cols / 2;
+            zone.start_row = 0;
+            zone.end_row = rows;
+            if (idx == 0) {
+                zone.start_col = 0;
+                zone.end_col = half_col;
+            } else {
+                zone.start_col = half_col;
+                zone.end_col = cols;
+            }
+            break;
+        }
+        case 4: {
+            // Cuadrilla 2x2
+            // [0][1]
+            // [2][3]
+            int half_row = rows / 2;
+            int half_col = cols / 2;
+            int grid_row = idx / 2;
+            int grid_col = idx % 2;
+            zone.start_row = grid_row * half_row;
+            zone.end_row = (grid_row + 1) * half_row;
+            zone.start_col = grid_col * half_col;
+            zone.end_col = (grid_col + 1) * half_col;
+            break;
+        }
+        case 6: {
+            // Cuadrilla 3x2 (3 columnas, 2 filas)
+            // [0][1][2]
+            // [3][4][5]
+            int half_row = rows / 2;
+            int third_col = cols / 3;
+            int grid_row = idx / 3;
+            int grid_col = idx % 3;
+            zone.start_row = grid_row * half_row;
+            zone.end_row = (grid_row + 1) * half_row;
+            zone.start_col = grid_col * third_col;
+            zone.end_col = (grid_col + 1) * third_col;
+            break;
+        }
+        case 8: {
+            // Cuadrilla 4x2 (4 columnas, 2 filas)
+            // [0][1][2][3]
+            // [4][5][6][7]
+            int half_row = rows / 2;
+            int quarter_col = cols / 4;
+            int grid_row = idx / 4;
+            int grid_col = idx % 4;
+            zone.start_row = grid_row * half_row;
+            zone.end_row = (grid_row + 1) * half_row;
+            zone.start_col = grid_col * quarter_col;
+            zone.end_col = (grid_col + 1) * quarter_col;
+            break;
+        }
+    }
+    
+    return zone;
+}
+
+// Verifica si el número de jugadores es válido para modo competición con zonas
+inline bool is_valid_player_count(int num_players) {
+    return num_players == 2 || num_players == 4 || num_players == 6 || num_players == 8;
+}
+
 // Valor de celda: 0 = muerta, 1-255 = viva (ID del jugador que la creó)
 using CellValue = int8_t;
 constexpr CellValue CELL_DEAD = 0;
@@ -53,7 +154,9 @@ void load_pattern_into_grid(
     viewpoint vp, 
     int x, int y, 
     int rows, int cols,
-    CellValue player_id = 1
+    CellValue player_id = 1,
+    bool mirror_h = false,
+    bool mirror_v = false
 );
 
 void load_pattern_into_grid(
@@ -61,7 +164,9 @@ void load_pattern_into_grid(
     CellValue** grid, 
     int row_pos, int col_pos, 
     int rows, int cols,
-    CellValue player_id = 1
+    CellValue player_id = 1,
+    bool mirror_h = false,
+    bool mirror_v = false
 );
 
 // I/O
@@ -79,6 +184,11 @@ void zoomOut(viewpoint* vp, float x, float y, int rows, int cols);
 // Rendering
 void print_grid(SDL_Window* window, SDL_Renderer* renderer, CellValue** grid, 
                 viewpoint vp, int rows, int cols);
+
+// Rendering con zonas de spawn (para modo competición)
+void print_grid_with_zones(SDL_Window* window, SDL_Renderer* renderer, CellValue** grid, 
+                           viewpoint vp, int rows, int cols,
+                           int local_player_id, int num_players, bool competition_mode);
 
 // Minimapa
 void render_minimap(SDL_Renderer* renderer, CellValue** grid, 

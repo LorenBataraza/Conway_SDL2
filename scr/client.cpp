@@ -120,12 +120,14 @@ void send_pattern(AppState* app_state, SDL_Window* window, viewpoint* vp,
     int grid_row, grid_col;
     screen_to_grid(app_state, window, vp, screen_x, screen_y, grid_row, grid_col);
     
-    // Formato: ADD_PATTERN <pattern> <row> <col> [player_id]
+    // Formato: ADD_PATTERN <pattern> <row> <col> <player_id> <mirror_h> <mirror_v>
     char buffer[256];
-    snprintf(buffer, sizeof(buffer), "ADD_PATTERN %s %d %d %d", 
+    snprintf(buffer, sizeof(buffer), "ADD_PATTERN %s %d %d %d %d %d", 
              app_state->current_pattern.c_str(), 
              grid_row, grid_col,
-             static_cast<int>(app_state->player_id));
+             static_cast<int>(app_state->player_id),
+             app_state->mirror_horizontal ? 1 : 0,
+             app_state->mirror_vertical ? 1 : 0);
     
     ssize_t sent = send(app_state->client_socket, buffer, strlen(buffer), MSG_NOSIGNAL);
     
@@ -313,6 +315,11 @@ void receive_update(AppState* app_state) {
         // Mensajes especiales
         if (line.find("ERROR NOT_ENOUGH_POINTS") != std::string::npos) {
             std::cout << "[CLIENT] No hay suficientes puntos de consumo" << std::endl;
+            continue;
+        }
+        
+        if (line.find("ERROR OUTSIDE_ZONE") != std::string::npos) {
+            std::cout << "[CLIENT] No puedes colocar fuera de tu zona" << std::endl;
             continue;
         }
         

@@ -131,7 +131,7 @@ struct AppState {
     static constexpr int MAX_PLAYERS = 8;
     PlayerScore player_scores[MAX_PLAYERS + 1];  // índice 0 no usado
     
-    int victory_goal = 1000;
+    int victory_goal = 60000;
     int num_clients = 1;
     
     // Puntos locales (atajo)
@@ -151,6 +151,11 @@ struct AppState {
     bool showMinimap = true;
     bool showNetworkStats = false;
     bool showScoreBar = true;  // Barra inferior con puntos
+    bool showPlayerHUD = true; // HUD superior con info del jugador
+    
+    // Espejado de patrones
+    bool mirror_horizontal = false;
+    bool mirror_vertical = false;
     
     // Configuración del minimapa
     int minimap_size = 150;
