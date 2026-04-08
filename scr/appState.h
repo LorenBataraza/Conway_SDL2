@@ -116,16 +116,44 @@ struct AppState {
         uint64_t bytes_received = 0;
         uint32_t latency_ms = 0;
     } net_stats;
+    
+    // ============== Modo Competición ==============
+    enum class GameMode { NORMAL = 0, COMPETITION = 1 };
+    GameMode game_mode = GameMode::NORMAL;
+    
+    // Estado de puntos de todos los jugadores
+    struct PlayerScore {
+        int victory_points = 0;
+        int consumption_points = 200;
+        int cells_alive = 0;
+        bool active = false;
+    };
+    static constexpr int MAX_PLAYERS = 8;
+    PlayerScore player_scores[MAX_PLAYERS + 1];  // índice 0 no usado
+    
+    int victory_goal = 1000;
+    int num_clients = 1;
+    
+    // Puntos locales (atajo)
+    int my_victory() const { return player_scores[player_id].victory_points; }
+    int my_consumption() const { return player_scores[player_id].consumption_points; }
+    int my_cells() const { return player_scores[player_id].cells_alive; }
+    
+    bool can_afford(int cost) const { 
+        if (game_mode == GameMode::NORMAL) return true;
+        return player_scores[player_id].consumption_points >= cost; 
+    }
 
     // ============== UI ==============
     bool showParameters = true;
     bool showMultiplayerConf = false;
     bool showStructures = true;
-    bool showMinimap = true;  // Nuevo: mostrar minimapa
-    bool showNetworkStats = false;  // Nuevo: mostrar stats de red
+    bool showMinimap = true;
+    bool showNetworkStats = false;
+    bool showScoreBar = true;  // Barra inferior con puntos
     
     // Configuración del minimapa
-    int minimap_size = 150;  // Tamaño del minimapa en pixels
+    int minimap_size = 150;
     
     // ============== FPS ==============
     struct FPSCounter {

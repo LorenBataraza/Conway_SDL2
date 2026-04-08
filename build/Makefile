@@ -204,6 +204,19 @@ test_server/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_server.dir/build.make CMakeFiles/test_server.dir/build
 .PHONY : test_server/fast
 
+#=============================================================================
+# Target rules for targets named life_wallpaper
+
+# Build rule for target.
+life_wallpaper: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 life_wallpaper
+.PHONY : life_wallpaper
+
+# fast build rule for target.
+life_wallpaper/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/life_wallpaper.dir/build.make CMakeFiles/life_wallpaper.dir/build
+.PHONY : life_wallpaper/fast
+
 includes/imgui/imgui.o: includes/imgui/imgui.cpp.o
 .PHONY : includes/imgui/imgui.o
 
@@ -380,6 +393,7 @@ scr/grid.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Graphics.dir/build.make CMakeFiles/Graphics.dir/scr/grid.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/conway_server.dir/build.make CMakeFiles/conway_server.dir/scr/grid.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ncurses_viewer.dir/build.make CMakeFiles/ncurses_viewer.dir/scr/grid.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/life_wallpaper.dir/build.make CMakeFiles/life_wallpaper.dir/scr/grid.cpp.o
 .PHONY : scr/grid.cpp.o
 
 scr/grid.i: scr/grid.cpp.i
@@ -390,6 +404,7 @@ scr/grid.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Graphics.dir/build.make CMakeFiles/Graphics.dir/scr/grid.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/conway_server.dir/build.make CMakeFiles/conway_server.dir/scr/grid.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ncurses_viewer.dir/build.make CMakeFiles/ncurses_viewer.dir/scr/grid.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/life_wallpaper.dir/build.make CMakeFiles/life_wallpaper.dir/scr/grid.cpp.i
 .PHONY : scr/grid.cpp.i
 
 scr/grid.s: scr/grid.cpp.s
@@ -400,6 +415,7 @@ scr/grid.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Graphics.dir/build.make CMakeFiles/Graphics.dir/scr/grid.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/conway_server.dir/build.make CMakeFiles/conway_server.dir/scr/grid.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ncurses_viewer.dir/build.make CMakeFiles/ncurses_viewer.dir/scr/grid.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/life_wallpaper.dir/build.make CMakeFiles/life_wallpaper.dir/scr/grid.cpp.s
 .PHONY : scr/grid.cpp.s
 
 scr/main.o: scr/main.cpp.o
@@ -498,6 +514,30 @@ scr/server.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/conway_server.dir/build.make CMakeFiles/conway_server.dir/scr/server.cpp.s
 .PHONY : scr/server.cpp.s
 
+scr/wallpaper.o: scr/wallpaper.cpp.o
+.PHONY : scr/wallpaper.o
+
+# target to build an object file
+scr/wallpaper.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/life_wallpaper.dir/build.make CMakeFiles/life_wallpaper.dir/scr/wallpaper.cpp.o
+.PHONY : scr/wallpaper.cpp.o
+
+scr/wallpaper.i: scr/wallpaper.cpp.i
+.PHONY : scr/wallpaper.i
+
+# target to preprocess a source file
+scr/wallpaper.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/life_wallpaper.dir/build.make CMakeFiles/life_wallpaper.dir/scr/wallpaper.cpp.i
+.PHONY : scr/wallpaper.cpp.i
+
+scr/wallpaper.s: scr/wallpaper.cpp.s
+.PHONY : scr/wallpaper.s
+
+# target to generate assembly for a file
+scr/wallpaper.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/life_wallpaper.dir/build.make CMakeFiles/life_wallpaper.dir/scr/wallpaper.cpp.s
+.PHONY : scr/wallpaper.cpp.s
+
 tests/test_server.o: tests/test_server.cpp.o
 .PHONY : tests/test_server.o
 
@@ -535,6 +575,7 @@ help:
 	@echo "... conway_server"
 	@echo "... imgui"
 	@echo "... life_game"
+	@echo "... life_wallpaper"
 	@echo "... ncurses_viewer"
 	@echo "... test_server"
 	@echo "... includes/imgui/imgui.o"
@@ -573,6 +614,9 @@ help:
 	@echo "... scr/server.o"
 	@echo "... scr/server.i"
 	@echo "... scr/server.s"
+	@echo "... scr/wallpaper.o"
+	@echo "... scr/wallpaper.i"
+	@echo "... scr/wallpaper.s"
 	@echo "... tests/test_server.o"
 	@echo "... tests/test_server.i"
 	@echo "... tests/test_server.s"

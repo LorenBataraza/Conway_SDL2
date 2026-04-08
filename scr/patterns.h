@@ -43,6 +43,9 @@ struct PatternData {
     std::string name;
     std::string display_name;
     std::vector<std::pair<int, int>> cells;
+    int cost;  // Costo en puntos de consumo para modo competición
+    
+    int cell_count() const { return static_cast<int>(cells.size()); }
 };
 
 /**
@@ -99,33 +102,35 @@ private:
     }
 
     void init_patterns() {
+        // Formato: {id, name, display_name, cells, cost}
+        // Costo basado aproximadamente en: celdas * complejidad
         patterns_ = {
-            // Still Life
-            {Pattern::POINT, "point", "Point", {{0,0}}},
+            // Still Life (costo bajo - estables)
+            {Pattern::POINT, "point", "Point", {{0,0}}, 1},
             
-            {Pattern::BLOCK, "block", "Block", {{0,0}, {1,0}, {0,1}, {1,1}}},
+            {Pattern::BLOCK, "block", "Block", {{0,0}, {1,0}, {0,1}, {1,1}}, 4},
             
             {Pattern::BEEHIVE, "beehive", "Beehive", 
-                {{1,0}, {2,0}, {0,1}, {3,1}, {1,2}, {2,2}}},
+                {{1,0}, {2,0}, {0,1}, {3,1}, {1,2}, {2,2}}, 6},
             
             {Pattern::LOAF, "loaf", "Loaf", 
-                {{1,0}, {2,0}, {0,1}, {3,1}, {1,2}, {3,2}, {2,3}}},
+                {{1,0}, {2,0}, {0,1}, {3,1}, {1,2}, {3,2}, {2,3}}, 7},
             
             {Pattern::BOAT, "boat", "Boat", 
-                {{0,0}, {1,0}, {0,1}, {2,1}, {1,2}}},
+                {{0,0}, {1,0}, {0,1}, {2,1}, {1,2}}, 5},
             
             {Pattern::FLOWER, "flower", "Flower", 
-                {{1,0}, {0,1}, {2,1}, {1,2}}},
+                {{1,0}, {0,1}, {2,1}, {1,2}}, 4},
 
-            // Oscillators
+            // Oscillators (costo medio - generan actividad)
             {Pattern::BLINKER, "blinker", "Blinker", 
-                {{0,0}, {1,0}, {2,0}}},
+                {{0,0}, {1,0}, {2,0}}, 5},
             
             {Pattern::TOAD, "toad", "Toad", 
-                {{1,0}, {2,0}, {3,0}, {0,1}, {1,1}, {2,1}}},
+                {{1,0}, {2,0}, {3,0}, {0,1}, {1,1}, {2,1}}, 10},
             
             {Pattern::BEACON, "beacon", "Beacon", 
-                {{0,0}, {1,0}, {0,1}, {3,2}, {2,3}, {3,3}}},
+                {{0,0}, {1,0}, {0,1}, {3,2}, {2,3}, {3,3}}, 10},
             
             {Pattern::PULSAR, "pulsar", "Pulsar", {
                 {2,0}, {3,0}, {4,0}, {8,0}, {9,0}, {10,0},
@@ -138,22 +143,22 @@ private:
                 {0,9}, {5,9}, {7,9}, {12,9},
                 {0,10}, {5,10}, {7,10}, {12,10},
                 {2,12}, {3,12}, {4,12}, {8,12}, {9,12}, {10,12}
-            }},
+            }, 50},
 
-            // Spaceships
+            // Spaceships (costo alto - invaden territorio)
             {Pattern::GLIDER, "glider", "Glider", 
-                {{0,1}, {1,2}, {2,0}, {2,1}, {2,2}}},
+                {{0,1}, {1,2}, {2,0}, {2,1}, {2,2}}, 15},
             
             {Pattern::LWSS, "lwss", "Lightweight Spaceship", 
-                {{0,0}, {3,0}, {4,1}, {0,2}, {4,2}, {1,3}, {2,3}, {3,3}, {4,3}}},
+                {{0,0}, {3,0}, {4,1}, {0,2}, {4,2}, {1,3}, {2,3}, {3,3}, {4,3}}, 25},
             
             {Pattern::MWSS, "mwss", "Medium Spaceship", 
-                {{0,0}, {4,0}, {5,1}, {0,2}, {5,2}, {1,3}, {2,3}, {3,3}, {4,3}, {5,3}}},
+                {{0,0}, {4,0}, {5,1}, {0,2}, {5,2}, {1,3}, {2,3}, {3,3}, {4,3}, {5,3}}, 35},
             
             {Pattern::HWSS, "hwss", "Heavy Spaceship", 
-                {{0,0}, {5,0}, {6,1}, {0,2}, {6,2}, {1,3}, {2,3}, {3,3}, {4,3}, {5,3}, {6,3}}},
+                {{0,0}, {5,0}, {6,1}, {0,2}, {6,2}, {1,3}, {2,3}, {3,3}, {4,3}, {5,3}, {6,3}}, 45},
 
-            // Guns
+            // Guns (costo muy alto - producen infinitas celdas)
             {Pattern::GLIDER_GUN, "glider_gun", "Gosper Glider Gun", {
                 // Left square
                 {0,4}, {0,5}, {1,4}, {1,5},
@@ -173,7 +178,7 @@ private:
                 {21,2}, {21,3}, {21,4},
                 {22,1}, {22,5},
                 {24,0}, {24,1}, {24,5}, {24,6}
-            }}
+            }, 100}
         };
     }
 
@@ -198,4 +203,12 @@ inline const std::vector<std::pair<int, int>>& get_pattern_cells(Pattern pattern
 
 inline bool pattern_exists(const std::string& name) {
     return PatternRegistry::instance().exists(name);
+}
+
+inline int get_pattern_cost(const std::string& name) {
+    return PatternRegistry::instance().get(name).cost;
+}
+
+inline int get_pattern_cost(Pattern pattern) {
+    return PatternRegistry::instance().get(pattern).cost;
 }

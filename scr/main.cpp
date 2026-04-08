@@ -435,17 +435,55 @@ bool loop() {
                 app_state.server_ip = ip_buf;
                 app_state.server_port = port;
                 init_connection(&app_state);
+                if (app_state.multiplayer) {
+                    request_config(&app_state);
+                }
             }
         } else {
             ImGui::Text("Servidor: %s:%d", 
                        app_state.server_ip.c_str(), 
                        app_state.server_port);
             ImGui::Text("Tu ID: %d", app_state.player_id);
+            ImGui::Text("Clientes: %d", app_state.num_clients);
             
             // Mostrar tu color
             SDL_Color c = get_player_color(app_state.player_id);
             ImVec4 color(c.r/255.0f, c.g/255.0f, c.b/255.0f, 1.0f);
             ImGui::ColorButton("Tu color", color, 0, ImVec2(50, 20));
+            
+            ImGui::Separator();
+            
+            // Modo de juego
+            const char* mode_str = (app_state.game_mode == AppState::GameMode::COMPETITION) 
+                                   ? "COMPETITION" : "NORMAL";
+            ImGui::Text("Modo: %s", mode_str);
+            
+            if (app_state.game_mode == AppState::GameMode::COMPETITION) {
+                ImGui::TextColored(ImVec4(0.3f, 0.7f, 0.9f, 1.0f), 
+                                  "Consumo: %d", app_state.my_consumption());
+                ImGui::TextColored(ImVec4(0.9f, 0.7f, 0.2f, 1.0f), 
+                                  "Victoria: %d/%d", 
+                                  app_state.my_victory(), 
+                                  app_state.victory_goal);
+                ImGui::Text("Celdas: %d", app_state.my_cells());
+            }
+            
+            ImGui::Separator();
+            
+            // Botones de control
+            if (ImGui::Button(app_state.run_sim ? "Pausar" : "Reanudar", ImVec2(80, 25))) {
+                send_command(&app_state, app_state.run_sim ? "SET_RUN 0" : "SET_RUN 1");
+            }
+            
+            ImGui::SameLine();
+            if (ImGui::Button("Limpiar", ImVec2(80, 25))) {
+                send_command(&app_state, "CLEAR");
+            }
+            
+            ImGui::SameLine();
+            if (ImGui::Button("Reset", ImVec2(80, 25))) {
+                send_command(&app_state, "RESET");
+            }
             
             ImGui::Separator();
             ImGui::Text("Estadísticas:");
@@ -466,9 +504,22 @@ bool loop() {
         
         const ImVec2 button_size(64, 64);
         
+        // Helper para obtener costo y verificar si se puede comprar
+        auto get_pattern_info = [&](const char* name) -> std::pair<int, bool> {
+            int cost = get_pattern_cost(name);
+            bool can_buy = app_state.can_afford(cost);
+            return {cost, can_buy};
+        };
+        
         auto pattern_button = [&](const char* name, const char* tooltip) {
             ImGui::PushID(name);
             bool selected = (name == app_state.current_pattern);
+            auto [cost, can_buy] = get_pattern_info(name);
+            
+            // Tinte rojo si no se puede comprar (modo competición)
+            ImVec4 tint = (app_state.game_mode == AppState::GameMode::COMPETITION && !can_buy) 
+                          ? ImVec4(0.3f, 0.3f, 0.3f, 0.5f) 
+                          : (selected ? ImVec4(1,1,1,1) : ImVec4(0.7f, 0.7f, 0.7f, 0.8f));
             
             if (ImGui::ImageButton(
                 name,
@@ -476,14 +527,32 @@ bool loop() {
                 button_size,
                 ImVec2(0,0), ImVec2(1,1),
                 ImGui::GetStyle().Colors[ImGuiCol_Button],
-                selected ? ImVec4(1,1,1,1) : ImVec4(0.5f, 0.5f, 0.5f, 0.5f)
+                tint
             )) {
-                app_state.current_pattern = selected ? "point" : name;
+                if (can_buy || app_state.game_mode == AppState::GameMode::NORMAL) {
+                    app_state.current_pattern = selected ? "point" : name;
+                }
             }
             
+            // Tooltip con costo
             if (ImGui::IsItemHovered()) {
-                ImGui::SetTooltip("%s", tooltip);
+                if (app_state.game_mode == AppState::GameMode::COMPETITION) {
+                    ImGui::SetTooltip("%s\nCosto: %d pts\n%s", 
+                                     tooltip, cost,
+                                     can_buy ? "✓ Disponible" : "✗ Sin puntos");
+                } else {
+                    ImGui::SetTooltip("%s", tooltip);
+                }
             }
+            
+            // Indicador de costo debajo del botón
+            if (app_state.game_mode == AppState::GameMode::COMPETITION) {
+                ImVec4 cost_color = can_buy 
+                    ? ImVec4(0.3f, 0.8f, 0.3f, 1.0f) 
+                    : ImVec4(0.8f, 0.3f, 0.3f, 1.0f);
+                ImGui::TextColored(cost_color, "%d", cost);
+            }
+            
             ImGui::PopID();
         };
 
@@ -504,6 +573,12 @@ bool loop() {
             }
             
             bool selected = (name == app_state.current_pattern);
+            auto [cost, can_buy] = get_pattern_info(name);
+            
+            // Tinte si no se puede comprar
+            ImVec4 tint = (app_state.game_mode == AppState::GameMode::COMPETITION && !can_buy) 
+                          ? ImVec4(0.3f, 0.3f, 0.3f, 0.5f) 
+                          : (selected ? ImVec4(1,1,1,1) : ImVec4(0.7f, 0.7f, 0.7f, 0.8f));
             
             if (ImGui::ImageButton(
                 name,
@@ -511,14 +586,31 @@ bool loop() {
                 size,
                 ImVec2(0,0), ImVec2(1,1),
                 ImGui::GetStyle().Colors[ImGuiCol_Button],
-                selected ? ImVec4(1,1,1,1) : ImVec4(0.5f, 0.5f, 0.5f, 0.5f)
+                tint
             )) {
-                app_state.current_pattern = selected ? "point" : name;
+                if (can_buy || app_state.game_mode == AppState::GameMode::NORMAL) {
+                    app_state.current_pattern = selected ? "point" : name;
+                }
             }
             
             if (ImGui::IsItemHovered()) {
-                ImGui::SetTooltip("%s", tooltip);
+                if (app_state.game_mode == AppState::GameMode::COMPETITION) {
+                    ImGui::SetTooltip("%s\nCosto: %d pts\n%s", 
+                                     tooltip, cost,
+                                     can_buy ? "✓ Disponible" : "✗ Sin puntos");
+                } else {
+                    ImGui::SetTooltip("%s", tooltip);
+                }
             }
+            
+            // Indicador de costo
+            if (app_state.game_mode == AppState::GameMode::COMPETITION) {
+                ImVec4 cost_color = can_buy 
+                    ? ImVec4(0.3f, 0.8f, 0.3f, 1.0f) 
+                    : ImVec4(0.8f, 0.3f, 0.3f, 1.0f);
+                ImGui::TextColored(cost_color, "%d", cost);
+            }
+            
             ImGui::PopID();
         };
 
@@ -562,6 +654,92 @@ bool loop() {
             ImGui::TreePop();
         }
 
+        ImGui::End();
+    }
+
+    // ============== BARRA DE PUNTOS INFERIOR ==============
+    if (app_state.showScoreBar && app_state.multiplayer && 
+        app_state.game_mode == AppState::GameMode::COMPETITION) {
+        
+        ImGuiWindowFlags bar_flags = 
+            ImGuiWindowFlags_NoTitleBar | 
+            ImGuiWindowFlags_NoResize | 
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoScrollbar |
+            ImGuiWindowFlags_NoSavedSettings;
+        
+        float bar_height = 60.0f;
+        ImGui::SetNextWindowPos(ImVec2(0, window_height - bar_height));
+        ImGui::SetNextWindowSize(ImVec2(window_width, bar_height));
+        ImGui::SetNextWindowBgAlpha(0.85f);
+        
+        ImGui::Begin("##ScoreBar", nullptr, bar_flags);
+        
+        // Mi info (izquierda)
+        ImGui::BeginGroup();
+        {
+            SDL_Color my_color = get_player_color(app_state.player_id);
+            ImVec4 color_vec(my_color.r/255.0f, my_color.g/255.0f, my_color.b/255.0f, 1.0f);
+            
+            ImGui::TextColored(color_vec, "Jugador %d", app_state.player_id);
+            
+            // Barra de consumo
+            float consumption_ratio = app_state.my_consumption() / 200.0f;
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.2f, 0.6f, 0.9f, 1.0f));
+            ImGui::ProgressBar(consumption_ratio, ImVec2(150, 18), "");
+            ImGui::PopStyleColor();
+            ImGui::SameLine();
+            ImGui::Text("Consumo: %d", app_state.my_consumption());
+            
+            // Barra de victoria
+            float victory_ratio = static_cast<float>(app_state.my_victory()) / app_state.victory_goal;
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.9f, 0.7f, 0.2f, 1.0f));
+            ImGui::ProgressBar(victory_ratio, ImVec2(150, 18), "");
+            ImGui::PopStyleColor();
+            ImGui::SameLine();
+            ImGui::Text("Victoria: %d/%d", app_state.my_victory(), app_state.victory_goal);
+        }
+        ImGui::EndGroup();
+        
+        ImGui::SameLine(300);
+        
+        // Otros jugadores (derecha)
+        ImGui::BeginGroup();
+        {
+            ImGui::Text("Jugadores:");
+            ImGui::SameLine();
+            
+            for (int i = 1; i <= AppState::MAX_PLAYERS; i++) {
+                if (!app_state.player_scores[i].active) continue;
+                if (i == app_state.player_id) continue;  // Ya mostré el mío
+                
+                SDL_Color p_color = get_player_color(i);
+                ImVec4 color_vec(p_color.r/255.0f, p_color.g/255.0f, p_color.b/255.0f, 1.0f);
+                
+                ImGui::SameLine();
+                ImGui::TextColored(color_vec, "[P%d: %d]", 
+                                  i, app_state.player_scores[i].victory_points);
+            }
+        }
+        ImGui::EndGroup();
+        
+        // Costo del patrón actual (centro-derecha)
+        ImGui::SameLine(window_width - 200);
+        {
+            int cost = get_pattern_cost(app_state.current_pattern);
+            bool can_buy = app_state.can_afford(cost);
+            
+            ImGui::Text("Patrón: %s", app_state.current_pattern.c_str());
+            
+            if (can_buy) {
+                ImGui::TextColored(ImVec4(0.3f, 0.9f, 0.3f, 1.0f), 
+                                  "Costo: %d (OK)", cost);
+            } else {
+                ImGui::TextColored(ImVec4(0.9f, 0.3f, 0.3f, 1.0f), 
+                                  "Costo: %d (SIN PUNTOS)", cost);
+            }
+        }
+        
         ImGui::End();
     }
 
