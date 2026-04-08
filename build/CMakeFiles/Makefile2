@@ -197,12 +197,12 @@ CMakeFiles/conway_server.dir/clean:
 CMakeFiles/ncurses_viewer.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ncurses_viewer.dir/build.make CMakeFiles/ncurses_viewer.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ncurses_viewer.dir/build.make CMakeFiles/ncurses_viewer.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles --progress-num=17,18 "Built target ncurses_viewer"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles --progress-num=17,18,19 "Built target ncurses_viewer"
 .PHONY : CMakeFiles/ncurses_viewer.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/ncurses_viewer.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles 3
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/ncurses_viewer.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles 0
 .PHONY : CMakeFiles/ncurses_viewer.dir/rule
@@ -223,7 +223,7 @@ CMakeFiles/ncurses_viewer.dir/clean:
 CMakeFiles/test_server.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_server.dir/build.make CMakeFiles/test_server.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_server.dir/build.make CMakeFiles/test_server.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles --progress-num=19,20 "Built target test_server"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles --progress-num=20,21 "Built target test_server"
 .PHONY : CMakeFiles/test_server.dir/all
 
 # Build rule for subdir invocation for target.

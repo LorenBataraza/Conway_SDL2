@@ -1,9 +1,0 @@
-/home/lorenzo/Desktop/Proyectos/Conway_life_game/CMakeFiles/imgui.dir
-/home/lorenzo/Desktop/Proyectos/Conway_life_game/CMakeFiles/Graphics.dir
-/home/lorenzo/Desktop/Proyectos/Conway_life_game/CMakeFiles/life_game.dir
-/home/lorenzo/Desktop/Proyectos/Conway_life_game/CMakeFiles/conway_server.dir
-/home/lorenzo/Desktop/Proyectos/Conway_life_game/CMakeFiles/ncurses_viewer.dir
-/home/lorenzo/Desktop/Proyectos/Conway_life_game/CMakeFiles/test_server.dir
-/home/lorenzo/Desktop/Proyectos/Conway_life_game/CMakeFiles/test.dir
-/home/lorenzo/Desktop/Proyectos/Conway_life_game/CMakeFiles/edit_cache.dir
-/home/lorenzo/Desktop/Proyectos/Conway_life_game/CMakeFiles/rebuild_cache.dir

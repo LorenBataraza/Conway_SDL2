@@ -182,20 +182,49 @@ void accept_new_client(ServerState& state) {
     }
 }
 
-bool receive_pattern(int client_socket, ServerState& state) {
+// Encontrar índice del cliente en el vector
+int find_client_index(ServerState& state, int client_fd) {
+    for (size_t i = 0; i < state.client_sockets.size(); i++) {
+        if (state.client_sockets[i] == client_fd) {
+            return static_cast<int>(i) + 1;  // IDs empiezan en 1
+        }
+    }
+    return 1;
+}
+
+// Enviar respuesta a un cliente específico
+void send_to_client(int client_fd, const std::string& msg) {
+    send(client_fd, msg.c_str(), msg.size(), MSG_NOSIGNAL);
+}
+
+// Broadcast de configuración a todos los clientes
+void broadcast_config(ServerState& state) {
+    std::stringstream ss;
+    ss << "CONFIG_UPDATE\n";
+    ss << "FREQ " << state.frecuencia << "\n";
+    ss << "RUN " << (state.run_sim ? 1 : 0) << "\n";
+    ss << "END\n";
+    
+    std::string msg = ss.str();
+    for (int fd : state.client_sockets) {
+        send_to_client(fd, msg);
+    }
+}
+
+bool receive_command(int client_socket, ServerState& state) {
     char buffer[1024];
     
     int received = recv(client_socket, buffer, sizeof(buffer)-1, 0);
     
     if (received < 0) {
         if (errno == EWOULDBLOCK || errno == EAGAIN) {
-            return true;  // OK, no hay datos
+            return true;
         }
-        return false;  // Error real
+        return false;
     }
     
     if (received == 0) {
-        return false;  // Cliente desconectado
+        return false;
     }
     
     buffer[received] = '\0';
@@ -206,25 +235,93 @@ bool receive_pattern(int client_socket, ServerState& state) {
         state.logger->log(PacketDirection::INCOMING, buffer, received);
     }
     
+    // Obtener player_id basado en el socket
+    int player_id = find_client_index(state, client_socket);
+    
+    // Parsear comandos
+    char cmd[50];
+    if (sscanf(buffer, "%49s", cmd) != 1) return true;
+    
+    // ========== COMANDO: ADD_PATTERN ==========
     char pattern[50];
-    int row, col;
-    if(sscanf(buffer, "ADD_PATTERN %49s %d %d", pattern, &row, &col) == 3) {
-        if(DEBUG_RECV) std::cout << "[RECV] Pattern: " << pattern << " at (" << row << "," << col << ")\n";
+    int row, col, req_player_id;
+    if (sscanf(buffer, "ADD_PATTERN %49s %d %d %d", pattern, &row, &col, &req_player_id) == 4) {
+        // Cliente especificó su player_id
+        player_id = req_player_id;
+    } else if (sscanf(buffer, "ADD_PATTERN %49s %d %d", pattern, &row, &col) == 3) {
+        // Usar player_id del socket
+    } else {
+        pattern[0] = '\0';  // No es ADD_PATTERN
+    }
+    
+    if (pattern[0] != '\0' && pattern_exists(pattern)) {
+        if(DEBUG_RECV) std::cout << "[RECV] Pattern: " << pattern << " at (" << row << "," << col << ") player=" << player_id << "\n";
         
-        if (pattern_exists(pattern)) {
-            const auto& cells = get_pattern_cells(pattern);
-            
-            for (const auto& [dx, dy] : cells) {
-                int x = col + dx;
-                int y = row + dy;
-                
-                if (x >= 0 && x < state.cols && y >= 0 && y < state.rows) {
-                    state.current_grid[y][x] = true;
-                }
+        const auto& cells = get_pattern_cells(pattern);
+        for (const auto& [dx, dy] : cells) {
+            int x = col + dx;
+            int y = row + dy;
+            if (x >= 0 && x < state.cols && y >= 0 && y < state.rows) {
+                state.current_grid[y][x] = static_cast<CellValue>(player_id);
             }
-        } else {
-            std::cerr << "[RECV] Unknown pattern: " << pattern << "\n";
         }
+        return true;
+    }
+    
+    // ========== COMANDO: SET_FREQ <hz> ==========
+    int new_freq;
+    if (sscanf(buffer, "SET_FREQ %d", &new_freq) == 1) {
+        if (new_freq >= 1 && new_freq <= 60) {
+            state.frecuencia = new_freq;
+            std::cout << "[CONFIG] Frecuencia cambiada a " << new_freq << " Hz por cliente " << player_id << "\n";
+            broadcast_config(state);
+        }
+        return true;
+    }
+    
+    // ========== COMANDO: SET_RUN <0|1> ==========
+    int run_val;
+    if (sscanf(buffer, "SET_RUN %d", &run_val) == 1) {
+        state.run_sim = (run_val != 0);
+        std::cout << "[CONFIG] Simulación " << (state.run_sim ? "ACTIVADA" : "PAUSADA") << " por cliente " << player_id << "\n";
+        broadcast_config(state);
+        return true;
+    }
+    
+    // ========== COMANDO: CLEAR ==========
+    if (strcmp(cmd, "CLEAR") == 0) {
+        for (int i = 0; i < state.rows; i++) {
+            for (int j = 0; j < state.cols; j++) {
+                state.current_grid[i][j] = CELL_DEAD;
+            }
+        }
+        std::cout << "[CONFIG] Grilla limpiada por cliente " << player_id << "\n";
+        return true;
+    }
+    
+    // ========== COMANDO: GET_CONFIG ==========
+    if (strcmp(cmd, "GET_CONFIG") == 0) {
+        std::stringstream ss;
+        ss << "CONFIG_UPDATE\n";
+        ss << "FREQ " << state.frecuencia << "\n";
+        ss << "RUN " << (state.run_sim ? 1 : 0) << "\n";
+        ss << "PLAYER_ID " << player_id << "\n";
+        ss << "CLIENTS " << state.client_count() << "\n";
+        ss << "END\n";
+        send_to_client(client_socket, ss.str());
+        return true;
+    }
+    
+    // ========== COMANDO: STEP (avanzar un paso manualmente) ==========
+    if (strcmp(cmd, "STEP") == 0 && !state.run_sim) {
+        update_grid(state.current_grid, GRID_ROWS, GRID_COLS);
+        std::cout << "[CONFIG] Step manual por cliente " << player_id << "\n";
+        return true;
+    }
+    
+    // Comando desconocido
+    if (DEBUG_RECV) {
+        std::cerr << "[RECV] Comando desconocido: " << cmd << "\n";
     }
     
     return true;
@@ -237,14 +334,15 @@ void broadcast_update(ServerState& state) {
     bool modified = false;
     int changes_count = 0;
     
-    for(int i = 0; i < ROWS; ++i) {
-        for(int j = 0; j < COLS; ++j) {
+    for(int i = 0; i < GRID_ROWS; ++i) {
+        for(int j = 0; j < GRID_COLS; ++j) {
             if(state.current_grid[i][j] != state.previous_grid[i][j]) {
                 if(!modified) {
                     ss << "GRID_UPDATE\n";
                     modified = true;
                 }
-                ss << i << " " << j << " " << (state.current_grid[i][j] ? 1 : 0) << "\n";
+                // Enviar el valor real de la celda (player_id o 0)
+                ss << i << " " << j << " " << static_cast<int>(state.current_grid[i][j]) << "\n";
                 changes_count++;
                 state.previous_grid[i][j] = state.current_grid[i][j];
             }
@@ -330,7 +428,7 @@ int main(int argc, char* argv[]) {
     std::cout << "[CONFIG] Log: " << log_file << "\n";
     std::cout << "[CONFIG] Patrones: " << PatternRegistry::instance().count() << "\n\n";
     
-    ServerState state(ROWS, COLS);
+    ServerState state(GRID_ROWS, GRID_COLS);
     state.logger = &logger;
     state.frecuencia = frecuencia;
     
@@ -361,7 +459,7 @@ int main(int argc, char* argv[]) {
                 accept_new_client(state);
             } else {
                 // Datos de cliente existente
-                if (!receive_pattern(state.poll_fds[i].fd, state)) {
+                if (!receive_command(state.poll_fds[i].fd, state)) {
                     std::cout << "[SERVER] Cliente desconectado\n";
                     state.remove_client(state.poll_fds[i].fd);
                     break;  // poll_fds cambió, salir del loop
@@ -369,8 +467,10 @@ int main(int argc, char* argv[]) {
             }
         }
         
-        // Simulación
-        update_grid(state.current_grid, ROWS, COLS);
+        // Simulación (solo si está activa)
+        if (state.run_sim) {
+            update_grid(state.current_grid, GRID_ROWS, GRID_COLS);
+        }
         broadcast_update(state);
         
         usleep(100000 / state.frecuencia);

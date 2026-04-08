@@ -128,23 +128,22 @@ target_link_libraries(conway_server
     Graphics
     pthread
 )
-
-# ============================================================================
 # Visor ncurses (terminal)
 # ============================================================================
 if(BUILD_NCURSES_VIEWER)
     add_executable(ncurses_viewer
         scr/ncurses_viewer.cpp
+        scr/grid.cpp
     )
-
     target_include_directories(ncurses_viewer PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/includes
         ${CMAKE_CURRENT_SOURCE_DIR}/scr
         ${CURSES_INCLUDE_DIR}
+        ${SDL2_INCLUDE_DIRS}
     )
-
     target_link_libraries(ncurses_viewer
         ${CURSES_LIBRARIES}
+        ${SDL2_LIBRARIES}
         pthread
     )
     

@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/ncurses_viewer.dir/scr/ncurses_viewer.cpp.o -o ncurses_viewer  -lcurses /usr/lib/x86_64-linux-gnu/libform.so -lpthread 

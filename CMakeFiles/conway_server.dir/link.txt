@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/conway_server.dir/scr/server.cpp.o CMakeFiles/conway_server.dir/scr/grid.cpp.o -o conway_server  -Wl,-rpath,/home/lorenzo/Desktop/Proyectos/Conway_life_game libGraphics.so -lpthread -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2 -lSDL2_ttf -lSDL2_image libimgui.a 

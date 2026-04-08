@@ -5,8 +5,8 @@
 #include <string>
 
 // Constantes de la grilla
-inline constexpr int ROWS = 100;
-inline constexpr int COLS = 100;
+inline constexpr int GRID_ROWS = 100;
+inline constexpr int GRID_COLS = 100;
 
 // Valor de celda: 0 = muerta, 1-255 = viva (ID del jugador que la creó)
 using CellValue = int8_t;

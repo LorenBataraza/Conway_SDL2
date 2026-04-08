@@ -40,7 +40,7 @@ viewpoint vp = {
     .zoom = 1.0f
 };
 
-AppState app_state(ROWS, COLS);
+AppState app_state(GRID_ROWS, GRID_COLS);
 static Uint32 last_sim_update;
 
 // Declaraciones

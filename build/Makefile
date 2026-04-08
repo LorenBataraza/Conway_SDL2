@@ -77,8 +77,8 @@ test/fast: test
 
 # Special rule for the target edit_cache
 edit_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
-	/usr/bin/cmake-gui -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
+	/usr/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -379,6 +379,7 @@ scr/grid.o: scr/grid.cpp.o
 scr/grid.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Graphics.dir/build.make CMakeFiles/Graphics.dir/scr/grid.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/conway_server.dir/build.make CMakeFiles/conway_server.dir/scr/grid.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ncurses_viewer.dir/build.make CMakeFiles/ncurses_viewer.dir/scr/grid.cpp.o
 .PHONY : scr/grid.cpp.o
 
 scr/grid.i: scr/grid.cpp.i
@@ -388,6 +389,7 @@ scr/grid.i: scr/grid.cpp.i
 scr/grid.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Graphics.dir/build.make CMakeFiles/Graphics.dir/scr/grid.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/conway_server.dir/build.make CMakeFiles/conway_server.dir/scr/grid.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ncurses_viewer.dir/build.make CMakeFiles/ncurses_viewer.dir/scr/grid.cpp.i
 .PHONY : scr/grid.cpp.i
 
 scr/grid.s: scr/grid.cpp.s
@@ -397,6 +399,7 @@ scr/grid.s: scr/grid.cpp.s
 scr/grid.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Graphics.dir/build.make CMakeFiles/Graphics.dir/scr/grid.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/conway_server.dir/build.make CMakeFiles/conway_server.dir/scr/grid.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ncurses_viewer.dir/build.make CMakeFiles/ncurses_viewer.dir/scr/grid.cpp.s
 .PHONY : scr/grid.cpp.s
 
 scr/main.o: scr/main.cpp.o
