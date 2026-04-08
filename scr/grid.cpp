@@ -116,7 +116,8 @@ void turnCell_withMemory(SDL_Window* window, CellValue** grid, viewpoint vp,
 
 void load_pattern_into_grid(const std::string& pattern_name, SDL_Window* window, 
                             CellValue** grid, viewpoint vp, int x, int y, 
-                            int rows, int cols, CellValue player_id) {
+                            int rows, int cols, CellValue player_id,
+                            bool mirror_h, bool mirror_v) {
     static int last_row = -1;
     static int last_col = -1;
 
@@ -137,9 +138,30 @@ void load_pattern_into_grid(const std::string& pattern_name, SDL_Window* window,
 
     if (pattern_exists(pattern_name)) {
         const auto& cells = get_pattern_cells(pattern_name);
+        
+        // Calcular bounding box para espejado
+        int min_dx = 0, max_dx = 0, min_dy = 0, max_dy = 0;
         for (const auto& [dx, dy] : cells) {
-            int px = col + dx - 1;
-            int py = row + dy - 1;
+            min_dx = std::min(min_dx, dx);
+            max_dx = std::max(max_dx, dx);
+            min_dy = std::min(min_dy, dy);
+            max_dy = std::max(max_dy, dy);
+        }
+        
+        for (const auto& [dx, dy] : cells) {
+            int tx = dx;
+            int ty = dy;
+            
+            // Aplicar espejado
+            if (mirror_h) {
+                tx = max_dx - (dx - min_dx);
+            }
+            if (mirror_v) {
+                ty = max_dy - (dy - min_dy);
+            }
+            
+            int px = col + tx - 1;
+            int py = row + ty - 1;
             if (px >= 0 && px < cols && py >= 0 && py < rows) {
                 grid[py][px] = player_id;
             }
@@ -152,14 +174,36 @@ void load_pattern_into_grid(const std::string& pattern_name, SDL_Window* window,
 
 void load_pattern_into_grid(const std::string& pattern_name, CellValue** grid, 
                             int row_pos, int col_pos, int rows, int cols, 
-                            CellValue player_id) {
+                            CellValue player_id,
+                            bool mirror_h, bool mirror_v) {
     if (row_pos < 0 || row_pos >= rows || col_pos < 0 || col_pos >= cols) return;
 
     if (pattern_exists(pattern_name)) {
         const auto& cells = get_pattern_cells(pattern_name);
+        
+        // Calcular bounding box para espejado
+        int min_dx = 0, max_dx = 0, min_dy = 0, max_dy = 0;
         for (const auto& [dx, dy] : cells) {
-            int x = col_pos + dx;
-            int y = row_pos + dy;
+            min_dx = std::min(min_dx, dx);
+            max_dx = std::max(max_dx, dx);
+            min_dy = std::min(min_dy, dy);
+            max_dy = std::max(max_dy, dy);
+        }
+        
+        for (const auto& [dx, dy] : cells) {
+            int tx = dx;
+            int ty = dy;
+            
+            // Aplicar espejado
+            if (mirror_h) {
+                tx = max_dx - (dx - min_dx);
+            }
+            if (mirror_v) {
+                ty = max_dy - (dy - min_dy);
+            }
+            
+            int x = col_pos + tx;
+            int y = row_pos + ty;
             if (x >= 0 && x < cols && y >= 0 && y < rows) {
                 grid[y][x] = player_id;
             }
@@ -254,9 +298,10 @@ void update_grid(CellValue** grid, int rows, int cols) {
     delete[] new_grid;
 }
 
-// Rendering
-void print_grid(SDL_Window* window, SDL_Renderer* renderer, CellValue** grid, 
-                viewpoint vp, int rows, int cols) {
+// Rendering con zonas de spawn
+void print_grid_with_zones(SDL_Window* window, SDL_Renderer* renderer, CellValue** grid, 
+                           viewpoint vp, int rows, int cols,
+                           int local_player_id, int num_players, bool competition_mode) {
     int window_width, window_height;
     SDL_GetWindowSize(window, &window_width, &window_height);
 
@@ -270,6 +315,56 @@ void print_grid(SDL_Window* window, SDL_Renderer* renderer, CellValue** grid,
 
     float cell_width = static_cast<float>(window_width) / visible_cols;
     float cell_height = static_cast<float>(window_height) / visible_rows;
+
+    // Dibujar zonas de spawn con tinte (solo en modo competición con jugadores válidos)
+    if (competition_mode && is_valid_player_count(num_players)) {
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+        
+        for (int player = 1; player <= num_players; player++) {
+            SpawnZone zone = get_spawn_zone(player, num_players, rows, cols);
+            SDL_Color player_color = get_player_color(player);
+            
+            // Calcular intersección de la zona con el área visible
+            int zone_start_row = std::max(zone.start_row, row_range.start);
+            int zone_end_row = std::min(zone.end_row, row_range.end);
+            int zone_start_col = std::max(zone.start_col, col_range.start);
+            int zone_end_col = std::min(zone.end_col, col_range.end);
+            
+            if (zone_start_row < zone_end_row && zone_start_col < zone_end_col) {
+                // Alpha más alto para la zona del jugador local
+                Uint8 alpha = (player == local_player_id) ? 35 : 20;
+                SDL_SetRenderDrawColor(renderer, player_color.r, player_color.g, player_color.b, alpha);
+                
+                SDL_FRect zone_rect;
+                zone_rect.x = (zone_start_col - col_range.start) * cell_width;
+                zone_rect.y = (zone_start_row - row_range.start) * cell_height;
+                zone_rect.w = (zone_end_col - zone_start_col) * cell_width;
+                zone_rect.h = (zone_end_row - zone_start_row) * cell_height;
+                
+                SDL_RenderFillRectF(renderer, &zone_rect);
+            }
+        }
+        
+        // Dibujar bordes de zonas
+        SDL_SetRenderDrawColor(renderer, 80, 80, 80, 100);
+        for (int player = 1; player <= num_players; player++) {
+            SpawnZone zone = get_spawn_zone(player, num_players, rows, cols);
+            
+            // Calcular posición en pantalla
+            float x1 = (zone.start_col - col_range.start) * cell_width;
+            float y1 = (zone.start_row - row_range.start) * cell_height;
+            float x2 = (zone.end_col - col_range.start) * cell_width;
+            float y2 = (zone.end_row - row_range.start) * cell_height;
+            
+            // Solo dibujar si está visible
+            if (x2 > 0 && x1 < window_width && y2 > 0 && y1 < window_height) {
+                SDL_RenderDrawLineF(renderer, x1, y1, x2, y1);  // Top
+                SDL_RenderDrawLineF(renderer, x1, y2, x2, y2);  // Bottom
+                SDL_RenderDrawLineF(renderer, x1, y1, x1, y2);  // Left
+                SDL_RenderDrawLineF(renderer, x2, y1, x2, y2);  // Right
+            }
+        }
+    }
 
     // Dibujar celdas vivas
     for (int i = row_range.start; i < row_range.end; i++) {
@@ -303,6 +398,12 @@ void print_grid(SDL_Window* window, SDL_Renderer* renderer, CellValue** grid,
             SDL_RenderDrawLine(renderer, x, 0, x, window_height);
         }
     }
+}
+
+// Rendering (versión simple sin zonas)
+void print_grid(SDL_Window* window, SDL_Renderer* renderer, CellValue** grid, 
+                viewpoint vp, int rows, int cols) {
+    print_grid_with_zones(window, renderer, grid, vp, rows, cols, 0, 0, false);
 }
 
 // Minimapa

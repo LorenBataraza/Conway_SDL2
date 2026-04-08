@@ -120,12 +120,14 @@ void send_pattern(AppState* app_state, SDL_Window* window, viewpoint* vp,
     int grid_row, grid_col;
     screen_to_grid(app_state, window, vp, screen_x, screen_y, grid_row, grid_col);
     
-    // Formato: ADD_PATTERN <pattern> <row> <col> [player_id]
+    // Formato: ADD_PATTERN <pattern> <row> <col> <player_id> <mirror_h> <mirror_v>
     char buffer[256];
-    snprintf(buffer, sizeof(buffer), "ADD_PATTERN %s %d %d %d", 
+    snprintf(buffer, sizeof(buffer), "ADD_PATTERN %s %d %d %d %d %d", 
              app_state->current_pattern.c_str(), 
              grid_row, grid_col,
-             static_cast<int>(app_state->player_id));
+             static_cast<int>(app_state->player_id),
+             app_state->mirror_horizontal ? 1 : 0,
+             app_state->mirror_vertical ? 1 : 0);
     
     ssize_t sent = send(app_state->client_socket, buffer, strlen(buffer), MSG_NOSIGNAL);
     
@@ -142,6 +144,104 @@ void send_pattern(AppState* app_state, SDL_Window* window, viewpoint* vp,
     
     if (app_state->packet_logger) {
         app_state->packet_logger->log(PacketDirection::OUTGOING, buffer, sent);
+    }
+}
+
+/**
+ * Envía un comando al servidor
+ */
+void send_command(AppState* app_state, const std::string& cmd) {
+    if (!app_state->multiplayer || app_state->client_socket < 0) return;
+    
+    ssize_t sent = send(app_state->client_socket, cmd.c_str(), cmd.size(), MSG_NOSIGNAL);
+    
+    if (sent < 0) {
+        if (errno == EPIPE || errno == ECONNRESET) {
+            disconnect(app_state);
+        }
+        return;
+    }
+    
+    app_state->net_stats.packets_sent++;
+    app_state->net_stats.bytes_sent += sent;
+}
+
+/**
+ * Solicita configuración al servidor
+ */
+void request_config(AppState* app_state) {
+    send_command(app_state, "GET_CONFIG");
+}
+
+/**
+ * Parsea una línea de configuración
+ */
+void parse_config_line(AppState* app_state, const std::string& line) {
+    int value;
+    char str_val[32];
+    
+    if (sscanf(line.c_str(), "FREQ %d", &value) == 1) {
+        app_state->frecuencia = value;
+    }
+    else if (sscanf(line.c_str(), "RUN %d", &value) == 1) {
+        app_state->run_sim = (value != 0);
+    }
+    else if (sscanf(line.c_str(), "PLAYER_ID %d", &value) == 1) {
+        app_state->player_id = static_cast<CellValue>(value);
+    }
+    else if (sscanf(line.c_str(), "CLIENTS %d", &value) == 1) {
+        app_state->num_clients = value;
+    }
+    else if (sscanf(line.c_str(), "VICTORY_GOAL %d", &value) == 1) {
+        app_state->victory_goal = value;
+    }
+    else if (sscanf(line.c_str(), "MODE %31s", str_val) == 1) {
+        if (strcmp(str_val, "COMPETITION") == 0) {
+            app_state->game_mode = AppState::GameMode::COMPETITION;
+        } else {
+            app_state->game_mode = AppState::GameMode::NORMAL;
+        }
+    }
+}
+
+/**
+ * Parsea estado de un jugador
+ */
+void parse_player_state(AppState* app_state, const std::string& line) {
+    int pid, value;
+    
+    if (sscanf(line.c_str(), "PLAYER_ID %d", &pid) == 1) {
+        // Solo marcamos el jugador como activo
+        if (pid >= 1 && pid <= AppState::MAX_PLAYERS) {
+            app_state->player_scores[pid].active = true;
+        }
+    }
+    else if (sscanf(line.c_str(), "VICTORY %d", &value) == 1) {
+        int pid = app_state->player_id;
+        app_state->player_scores[pid].victory_points = value;
+    }
+    else if (sscanf(line.c_str(), "CONSUMPTION %d", &value) == 1) {
+        int pid = app_state->player_id;
+        app_state->player_scores[pid].consumption_points = value;
+    }
+    else if (sscanf(line.c_str(), "CELLS %d", &value) == 1) {
+        int pid = app_state->player_id;
+        app_state->player_scores[pid].cells_alive = value;
+    }
+}
+
+/**
+ * Parsea línea de SCORES (broadcast de puntos de todos)
+ */
+void parse_scores_line(AppState* app_state, const std::string& line) {
+    int pid, victory, consumption, cells;
+    if (sscanf(line.c_str(), "%d %d %d %d", &pid, &victory, &consumption, &cells) == 4) {
+        if (pid >= 1 && pid <= AppState::MAX_PLAYERS) {
+            app_state->player_scores[pid].victory_points = victory;
+            app_state->player_scores[pid].consumption_points = consumption;
+            app_state->player_scores[pid].cells_alive = cells;
+            app_state->player_scores[pid].active = true;
+        }
     }
 }
 
@@ -181,30 +281,77 @@ void receive_update(AppState* app_state) {
     std::stringstream ss(buffer);
     std::string line;
     
+    enum class ParseMode { NONE, GRID_UPDATE, CONFIG_UPDATE, PLAYER_STATE, SCORES };
+    ParseMode mode = ParseMode::NONE;
+    
     while (std::getline(ss, line)) {
-        if (line == "GRID_UPDATE") continue;
-        if (line == "END") break;
+        // Detectar inicio de bloque
+        if (line == "GRID_UPDATE") {
+            mode = ParseMode::GRID_UPDATE;
+            continue;
+        }
+        if (line == "CONFIG_UPDATE") {
+            mode = ParseMode::CONFIG_UPDATE;
+            continue;
+        }
+        if (line == "PLAYER_STATE") {
+            mode = ParseMode::PLAYER_STATE;
+            continue;
+        }
+        if (line == "SCORES") {
+            mode = ParseMode::SCORES;
+            // Resetear estado de jugadores activos
+            for (int i = 1; i <= AppState::MAX_PLAYERS; i++) {
+                app_state->player_scores[i].active = false;
+            }
+            continue;
+        }
+        if (line == "END") {
+            mode = ParseMode::NONE;
+            continue;
+        }
         if (line.empty()) continue;
         
-        int row, col, state;
-        
-        // Formato nuevo: <row> <col> <state>
-        // state puede ser 0 (muerta) o 1-N (ID del jugador)
-        if (sscanf(line.c_str(), "%d %d %d", &row, &col, &state) == 3) {
-            if (row >= 0 && row < app_state->rows && 
-                col >= 0 && col < app_state->cols) {
-                app_state->grid[row][col] = static_cast<CellValue>(state);
-            }
+        // Mensajes especiales
+        if (line.find("ERROR NOT_ENOUGH_POINTS") != std::string::npos) {
+            std::cout << "[CLIENT] No hay suficientes puntos de consumo" << std::endl;
+            continue;
         }
-        // Formato legacy: <row> <col> (toggle)
-        else if (sscanf(line.c_str(), "%d %d", &row, &col) == 2) {
-            if (row >= 0 && row < app_state->rows && 
-                col >= 0 && col < app_state->cols) {
-                // Toggle con player_id local
-                app_state->grid[row][col] = 
-                    (app_state->grid[row][col] == CELL_DEAD) 
-                    ? app_state->player_id : CELL_DEAD;
+        
+        if (line.find("ERROR OUTSIDE_ZONE") != std::string::npos) {
+            std::cout << "[CLIENT] No puedes colocar fuera de tu zona" << std::endl;
+            continue;
+        }
+        
+        int winner_id;
+        if (sscanf(line.c_str(), "WINNER %d", &winner_id) == 1) {
+            std::cout << "[CLIENT] ¡Jugador " << winner_id << " ganó!" << std::endl;
+            continue;
+        }
+        
+        // Parsear según el modo actual
+        switch (mode) {
+            case ParseMode::GRID_UPDATE: {
+                int row, col, state;
+                if (sscanf(line.c_str(), "%d %d %d", &row, &col, &state) == 3) {
+                    if (row >= 0 && row < app_state->rows && 
+                        col >= 0 && col < app_state->cols) {
+                        app_state->grid[row][col] = static_cast<CellValue>(state);
+                    }
+                }
+                break;
             }
+            case ParseMode::CONFIG_UPDATE:
+                parse_config_line(app_state, line);
+                break;
+            case ParseMode::PLAYER_STATE:
+                parse_player_state(app_state, line);
+                break;
+            case ParseMode::SCORES:
+                parse_scores_line(app_state, line);
+                break;
+            default:
+                break;
         }
     }
 }

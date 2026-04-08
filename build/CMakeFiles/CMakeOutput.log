@@ -261,3 +261,99 @@ int main(void)
 }
 
 
+Determining if the function XOpenDisplay exists in the /usr/lib/x86_64-linux-gnu/libX11.so;/usr/lib/x86_64-linux-gnu/libXext.so passed with the following output:
+Change Dir: /home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-tIDaWv
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_3d88d/fast && gmake[1]: Entering directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-tIDaWv'
+/usr/bin/gmake  -f CMakeFiles/cmTC_3d88d.dir/build.make CMakeFiles/cmTC_3d88d.dir/build
+gmake[2]: Entering directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-tIDaWv'
+Building CXX object CMakeFiles/cmTC_3d88d.dir/CheckFunctionExists.cxx.o
+/usr/bin/c++   -DCHECK_FUNCTION_EXISTS=XOpenDisplay -std=gnu++23 -o CMakeFiles/cmTC_3d88d.dir/CheckFunctionExists.cxx.o -c /home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-tIDaWv/CheckFunctionExists.cxx
+Linking CXX executable cmTC_3d88d
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_3d88d.dir/link.txt --verbose=1
+/usr/bin/c++  -DCHECK_FUNCTION_EXISTS=XOpenDisplay CMakeFiles/cmTC_3d88d.dir/CheckFunctionExists.cxx.o -o cmTC_3d88d  /usr/lib/x86_64-linux-gnu/libX11.so /usr/lib/x86_64-linux-gnu/libXext.so 
+gmake[2]: Leaving directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-tIDaWv'
+gmake[1]: Leaving directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-tIDaWv'
+
+
+
+Determining if the function gethostbyname exists passed with the following output:
+Change Dir: /home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-Z0X0JY
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_cdaa2/fast && gmake[1]: Entering directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-Z0X0JY'
+/usr/bin/gmake  -f CMakeFiles/cmTC_cdaa2.dir/build.make CMakeFiles/cmTC_cdaa2.dir/build
+gmake[2]: Entering directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-Z0X0JY'
+Building CXX object CMakeFiles/cmTC_cdaa2.dir/CheckFunctionExists.cxx.o
+/usr/bin/c++   -DCHECK_FUNCTION_EXISTS=gethostbyname -std=gnu++23 -o CMakeFiles/cmTC_cdaa2.dir/CheckFunctionExists.cxx.o -c /home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-Z0X0JY/CheckFunctionExists.cxx
+Linking CXX executable cmTC_cdaa2
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_cdaa2.dir/link.txt --verbose=1
+/usr/bin/c++  -DCHECK_FUNCTION_EXISTS=gethostbyname CMakeFiles/cmTC_cdaa2.dir/CheckFunctionExists.cxx.o -o cmTC_cdaa2 
+gmake[2]: Leaving directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-Z0X0JY'
+gmake[1]: Leaving directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-Z0X0JY'
+
+
+
+Determining if the function connect exists passed with the following output:
+Change Dir: /home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-Uyx5Wz
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_b9bc1/fast && gmake[1]: Entering directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-Uyx5Wz'
+/usr/bin/gmake  -f CMakeFiles/cmTC_b9bc1.dir/build.make CMakeFiles/cmTC_b9bc1.dir/build
+gmake[2]: Entering directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-Uyx5Wz'
+Building CXX object CMakeFiles/cmTC_b9bc1.dir/CheckFunctionExists.cxx.o
+/usr/bin/c++   -DCHECK_FUNCTION_EXISTS=connect -std=gnu++23 -o CMakeFiles/cmTC_b9bc1.dir/CheckFunctionExists.cxx.o -c /home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-Uyx5Wz/CheckFunctionExists.cxx
+Linking CXX executable cmTC_b9bc1
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b9bc1.dir/link.txt --verbose=1
+/usr/bin/c++  -DCHECK_FUNCTION_EXISTS=connect CMakeFiles/cmTC_b9bc1.dir/CheckFunctionExists.cxx.o -o cmTC_b9bc1 
+gmake[2]: Leaving directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-Uyx5Wz'
+gmake[1]: Leaving directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-Uyx5Wz'
+
+
+
+Determining if the function remove exists passed with the following output:
+Change Dir: /home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-dayKvY
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_70bbc/fast && gmake[1]: Entering directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-dayKvY'
+/usr/bin/gmake  -f CMakeFiles/cmTC_70bbc.dir/build.make CMakeFiles/cmTC_70bbc.dir/build
+gmake[2]: Entering directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-dayKvY'
+Building CXX object CMakeFiles/cmTC_70bbc.dir/CheckFunctionExists.cxx.o
+/usr/bin/c++   -DCHECK_FUNCTION_EXISTS=remove -std=gnu++23 -o CMakeFiles/cmTC_70bbc.dir/CheckFunctionExists.cxx.o -c /home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-dayKvY/CheckFunctionExists.cxx
+Linking CXX executable cmTC_70bbc
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_70bbc.dir/link.txt --verbose=1
+/usr/bin/c++  -DCHECK_FUNCTION_EXISTS=remove CMakeFiles/cmTC_70bbc.dir/CheckFunctionExists.cxx.o -o cmTC_70bbc 
+gmake[2]: Leaving directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-dayKvY'
+gmake[1]: Leaving directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-dayKvY'
+
+
+
+Determining if the function shmat exists passed with the following output:
+Change Dir: /home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-aFlHs7
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_8e53e/fast && gmake[1]: Entering directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-aFlHs7'
+/usr/bin/gmake  -f CMakeFiles/cmTC_8e53e.dir/build.make CMakeFiles/cmTC_8e53e.dir/build
+gmake[2]: Entering directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-aFlHs7'
+Building CXX object CMakeFiles/cmTC_8e53e.dir/CheckFunctionExists.cxx.o
+/usr/bin/c++   -DCHECK_FUNCTION_EXISTS=shmat -std=gnu++23 -o CMakeFiles/cmTC_8e53e.dir/CheckFunctionExists.cxx.o -c /home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-aFlHs7/CheckFunctionExists.cxx
+Linking CXX executable cmTC_8e53e
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_8e53e.dir/link.txt --verbose=1
+/usr/bin/c++  -DCHECK_FUNCTION_EXISTS=shmat CMakeFiles/cmTC_8e53e.dir/CheckFunctionExists.cxx.o -o cmTC_8e53e 
+gmake[2]: Leaving directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-aFlHs7'
+gmake[1]: Leaving directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-aFlHs7'
+
+
+
+Determining if the function IceConnectionNumber exists in the ICE passed with the following output:
+Change Dir: /home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-WP8tHg
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_f82ad/fast && gmake[1]: Entering directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-WP8tHg'
+/usr/bin/gmake  -f CMakeFiles/cmTC_f82ad.dir/build.make CMakeFiles/cmTC_f82ad.dir/build
+gmake[2]: Entering directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-WP8tHg'
+Building CXX object CMakeFiles/cmTC_f82ad.dir/CheckFunctionExists.cxx.o
+/usr/bin/c++   -DCHECK_FUNCTION_EXISTS=IceConnectionNumber -std=gnu++23 -o CMakeFiles/cmTC_f82ad.dir/CheckFunctionExists.cxx.o -c /home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-WP8tHg/CheckFunctionExists.cxx
+Linking CXX executable cmTC_f82ad
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f82ad.dir/link.txt --verbose=1
+/usr/bin/c++  -DCHECK_FUNCTION_EXISTS=IceConnectionNumber CMakeFiles/cmTC_f82ad.dir/CheckFunctionExists.cxx.o -o cmTC_f82ad  -lICE 
+gmake[2]: Leaving directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-WP8tHg'
+gmake[1]: Leaving directory '/home/lorenzo/Desktop/Proyectos/Conway_life_game/build/CMakeFiles/CMakeScratch/TryCompile-WP8tHg'
+
+
+

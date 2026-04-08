@@ -204,3 +204,35 @@ if(BUILD_NCURSES_VIEWER)
     message(STATUS "ncurses libraries: ${CURSES_LIBRARIES}")
 endif()
 message(STATUS "")
+
+
+# ============================================================================
+# Wallpaper Mode v3 (renderiza directo a X11 root window)
+# Agregar después de life_game en CMakeLists.txt
+# ============================================================================
+ 
+find_package(X11 REQUIRED)
+ 
+add_executable(life_wallpaper
+    scr/wallpaper.cpp
+    scr/grid.cpp
+)
+ 
+target_include_directories(life_wallpaper PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/includes
+    ${CMAKE_CURRENT_SOURCE_DIR}/scr
+    ${SDL2_INCLUDE_DIRS}
+    ${X11_INCLUDE_DIR}
+)
+ 
+target_link_libraries(life_wallpaper
+    ${SDL2_LIBRARIES}
+    ${X11_LIBRARIES}
+)
+ 
+# Características:
+# - Renderiza directamente en la root window de X11
+# - Funciona con cualquier window manager
+# - Compatible con cualquier librería gráfica (renderiza a buffer)
+# - SDL2 solo se usa para modo --windowed (testing)
+# - No requiere xwinwrap
