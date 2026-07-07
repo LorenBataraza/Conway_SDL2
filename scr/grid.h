@@ -5,8 +5,8 @@
 #include <string>
 
 // Constantes de la grilla
-inline constexpr int GRID_ROWS = 200;
-inline constexpr int GRID_COLS = 400;
+inline constexpr int GRID_ROWS = 400;
+inline constexpr int GRID_COLS = 800;
 
 // ==================== ZONAS DE SPAWN ====================
 

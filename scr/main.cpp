@@ -1,10 +1,12 @@
+#include "net_compat.h"   // Winsock antes que SDL/windows.h (orden importante en Windows)
+
 #include <iostream>
 #include <ctime>
+#include <algorithm>
 #include <stdio.h>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_image.h>
 
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"
@@ -13,6 +15,7 @@
 #include "appState.h"
 #include "grid.h"
 #include "patterns.h"
+#include "pattern_preview.h"
 #include "main_menu.cpp"
 #include "client.cpp"
 
@@ -43,6 +46,20 @@ viewpoint vp = {
 AppState app_state(GRID_ROWS, GRID_COLS);
 static Uint32 last_sim_update;
 
+// Previews nativos de patrones (reemplazan los GIF/PNG): render con el propio
+// autómata. Clave = nombre del patrón.
+std::unordered_map<std::string, std::unique_ptr<PatternPreview>> g_previews;
+
+// Crea (una vez) el preview de un patrón. `animate` para osciladores/naves/guns.
+static PatternPreview* get_preview(const std::string& name, bool animate, int size = 64) {
+    auto it = g_previews.find(name);
+    if (it != g_previews.end()) return it->second.get();
+    auto pv = std::make_unique<PatternPreview>(renderer, name, size, animate);
+    PatternPreview* raw = pv.get();
+    g_previews[name] = std::move(pv);
+    return raw;
+}
+
 // Declaraciones
 bool init();
 bool loop();
@@ -60,64 +77,8 @@ int main(int argc, char** args) {
 }
 
 // Funciones auxiliares
-SDL_Texture* load_texture(const std::string& path) {
-    SDL_Surface* surface = IMG_Load(path.c_str());
-    if (!surface) {
-        std::cerr << "Error cargando textura: " << IMG_GetError() << std::endl;
-        return nullptr;
-    }
-    
-    SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);
-    return tex;
-}
-
-Animation load_gif(const std::string& path, SDL_Renderer* renderer) {
-    Animation anim;
-    IMG_Animation* gif = IMG_LoadAnimation(path.c_str());
-    
-    if (!gif || !renderer) {
-        std::cerr << "Error cargando GIF: " << IMG_GetError() << "\n";
-        return anim;
-    }
-
-    anim.width = gif->w;
-    anim.height = gif->h;
-    anim.frame_count = gif->count;
-    anim.total_duration = 0;
-
-    anim.frames = new SDL_Texture*[anim.frame_count];
-    anim.delays = new Uint32[anim.frame_count];
-
-    for (int i = 0; i < anim.frame_count; ++i) {
-        if (!gif->frames[i]) {
-            std::cerr << "Error: Frame " << i << " es NULL en " << path << "\n";
-            continue;
-        }
-        
-        anim.frames[i] = SDL_CreateTextureFromSurface(renderer, gif->frames[i]);
-        anim.delays[i] = gif->delays[i];
-        anim.total_duration += anim.delays[i];
-    }
-
-    anim.current_frame = 0;
-    anim.last_update = SDL_GetTicks();
-    anim.loop_count = 0;
-
-    IMG_FreeAnimation(gif);
-    return anim;
-}
-
-void update_animation(Animation& anim) {
-    Uint32 now = SDL_GetTicks();
-    Uint32 elapsed = now - anim.last_update;
-
-    if (elapsed >= anim.delays[anim.current_frame]) {
-        anim.current_frame = (anim.current_frame + 1) % anim.frame_count;
-        anim.last_update = now;
-        if (anim.current_frame == 0) anim.loop_count++;
-    }
-}
+// (Los previews de patrones ahora se renderizan con el propio autómata en
+// PatternPreview; ya no se cargan texturas PNG ni animaciones GIF externas.)
 
 ImGuiKey SDL_ScancodeToImGuiKey(SDL_Scancode scancode) {
     switch (scancode) {
@@ -221,6 +182,12 @@ ImGuiKey SDL_ScancodeToImGuiKey(SDL_Scancode scancode) {
 }
 
 bool init() {
+    // Inicializar la pila de red (Winsock en Windows; no-op en POSIX).
+    if (net_init() != 0) {
+        std::cerr << "Error inicializando la red (Winsock)" << std::endl;
+        return false;
+    }
+
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
         cout << "Error initializing SDL: " << SDL_GetError() << endl;
         return false;
@@ -275,23 +242,18 @@ bool init() {
         std::cerr << "Error cargando fuente para ImGui!" << std::endl;
     }
 
-    // Cargar texturas
-    app_state.patterns["beehive"] = load_texture("../includes/img/still_life/beehive.png");
-    app_state.patterns["boat"] = load_texture("../includes/img/still_life/boat.png");
-    app_state.patterns["block"] = load_texture("../includes/img/still_life/block.png");
-    app_state.patterns["flower"] = load_texture("../includes/img/still_life/flower.png");
-    app_state.patterns["loaf"] = load_texture("../includes/img/still_life/loaf.png");
+    // Crear previews NATIVOS: el propio autómata renderiza cada patrón, en
+    // lugar de cargar GIF/PNG externos. Still lifes estáticos; el resto animado.
+    for (const char* n : {"block", "beehive", "boat", "loaf", "flower",
+                          "tub", "pond", "ship"})
+        get_preview(n, /*animate=*/false);
+    for (const char* n : {"blinker", "beacon", "toad", "pulsar", "pentadecathlon",
+                          "glider", "lwss", "mwss", "hwss", "glider_gun",
+                          "r_pentomino", "acorn", "diehard"})
+        get_preview(n, /*animate=*/true);
 
-    // Cargar animaciones
-    app_state.animations["beacon"] = std::move(load_gif("../includes/img/oscillators/beacon.gif", renderer));
-    app_state.animations["blinker"] = std::move(load_gif("../includes/img/oscillators/blinker.gif", renderer));
-    app_state.animations["toad"] = std::move(load_gif("../includes/img/oscillators/toad.gif", renderer));
-    app_state.animations["pulsar"] = std::move(load_gif("../includes/img/oscillators/pulsar.gif", renderer));
-    app_state.animations["glider"] = std::move(load_gif("../includes/img/spaceships/glider.gif", renderer));
-    app_state.animations["lwss"] = std::move(load_gif("../includes/img/spaceships/lwss.gif", renderer));
-    app_state.animations["mwss"] = std::move(load_gif("../includes/img/spaceships/mwss.gif", renderer));
-    app_state.animations["hwss"] = std::move(load_gif("../includes/img/spaceships/hwss.gif", renderer));
-    app_state.animations["glider_gun"] = std::move(load_gif("../includes/img/guns/glider_gun.gif", renderer));
+    // Cargar historial de conexiones multiplayer.
+    app_state.connection_history = load_connection_history();
 
     last_sim_update = SDL_GetTicks();
     app_state.fps.reset();
@@ -376,13 +338,15 @@ bool loop() {
 
             case SDL_MOUSEBUTTONDOWN:
                 if (!app_state.multiplayer) {
-                    load_pattern_into_grid(app_state.current_pattern, window, 
-                                          app_state.grid, vp, 
-                                          ev.button.x, ev.button.y, 
+                    load_pattern_into_grid(app_state.current_pattern, window,
+                                          app_state.grid, vp,
+                                          ev.button.x, ev.button.y,
                                           app_state.rows, app_state.cols,
                                           app_state.player_id,
                                           app_state.mirror_horizontal,
                                           app_state.mirror_vertical);
+                    // Edición externa de la grilla: reevaluar todo el próximo paso.
+                    app_state.automaton.mark_all_dirty();
                 } else {
                     send_pattern(&app_state, window, &vp, ev.button.x, ev.button.y);
                 }
@@ -408,7 +372,7 @@ bool loop() {
                         return false;
                     case SDLK_a:
                         if (!app_state.multiplayer) {
-                            update_grid(app_state.grid, app_state.rows, app_state.cols);
+                            app_state.automaton.step();
                         }
                         break;
                     case SDLK_e:
@@ -416,6 +380,7 @@ bool loop() {
                         break;
                     case SDLK_l:
                         loadGridFromTXT(app_state.grid, app_state.rows, app_state.cols, "lastSave.txt");
+                        app_state.automaton.mark_all_dirty();
                         break;
                     case SDLK_m:
                         app_state.showMinimap = !app_state.showMinimap;
@@ -426,7 +391,7 @@ bool loop() {
                         vp.center_y = 0.5f;
                         break;
                     case SDLK_c:
-                        clear_grid(app_state.grid, app_state.rows, app_state.cols);
+                        app_state.automaton.clear();
                         break;
                     case SDLK_h:
                         app_state.mirror_horizontal = !app_state.mirror_horizontal;
@@ -446,7 +411,7 @@ bool loop() {
         Uint32 interval = 1000 / app_state.frecuencia;
         
         if (elapsed >= interval) {
-            update_grid(app_state.grid, app_state.rows, app_state.cols);
+            app_state.automaton.step();
             last_sim_update = current_time;
         }
     }
@@ -456,10 +421,7 @@ bool loop() {
         receive_update(&app_state);
     }
 
-    // Actualizar animaciones
-    for (auto& [name, anim] : app_state.animations) {
-        update_animation(anim);
-    }
+    // (Los previews nativos se animan a sí mismos al pedir su textura.)
 
     // ============== RENDERIZADO UI ==============
     ImGui_ImplSDL2_NewFrame();
@@ -524,16 +486,35 @@ bool loop() {
         if (!app_state.multiplayer) {
             static char ip_buf[64] = "127.0.0.1";
             static int port = 6969;
-            
+
             ImGui::InputText("IP", ip_buf, sizeof(ip_buf));
             ImGui::InputInt("Puerto", &port);
-            
+
             if (ImGui::Button("Conectar", ImVec2(100, 25))) {
                 app_state.server_ip = ip_buf;
                 app_state.server_port = port;
                 init_connection(&app_state);
                 if (app_state.multiplayer) {
                     request_config(&app_state);
+                    request_full_grid(&app_state);  // sync inicial (lockstep)
+                    remember_connection(app_state.connection_history,
+                                        app_state.server_ip, app_state.server_port);
+                }
+            }
+
+            // Lista de conexiones previas (click para rellenar IP/puerto).
+            if (!app_state.connection_history.empty()) {
+                ImGui::Separator();
+                ImGui::TextDisabled("Conexiones previas:");
+                for (size_t i = 0; i < app_state.connection_history.size(); ++i) {
+                    const auto& e = app_state.connection_history[i];
+                    char label[96];
+                    snprintf(label, sizeof(label), "%s:%d##conn%zu",
+                             e.ip.c_str(), e.port, i);
+                    if (ImGui::Selectable(label)) {
+                        snprintf(ip_buf, sizeof(ip_buf), "%s", e.ip.c_str());
+                        port = e.port;
+                    }
                 }
             }
         } else {
@@ -598,164 +579,75 @@ bool loop() {
     // Ventana de estructuras (botones de patrones)
     if (app_state.showStructures) {
         ImGui::Begin("Estructuras", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-        
-        const ImVec2 button_size(64, 64);
-        
+
         // Helper para obtener costo y verificar si se puede comprar
         auto get_pattern_info = [&](const char* name) -> std::pair<int, bool> {
             int cost = get_pattern_cost(name);
             bool can_buy = app_state.can_afford(cost);
             return {cost, can_buy};
         };
-        
-        auto pattern_button = [&](const char* name, const char* tooltip) {
-            ImGui::PushID(name);
-            bool selected = (name == app_state.current_pattern);
-            auto [cost, can_buy] = get_pattern_info(name);
-            
-            // Tinte rojo si no se puede comprar (modo competición)
-            ImVec4 tint = (app_state.game_mode == AppState::GameMode::COMPETITION && !can_buy) 
-                          ? ImVec4(0.3f, 0.3f, 0.3f, 0.5f) 
-                          : (selected ? ImVec4(1,1,1,1) : ImVec4(0.7f, 0.7f, 0.7f, 0.8f));
-            
-            // Guardar posición antes del botón
-            ImVec2 btn_pos = ImGui::GetCursorScreenPos();
-            
-            if (ImGui::ImageButton(
-                name,
-                (ImTextureID)app_state.patterns[name],
-                button_size,
-                ImVec2(0,0), ImVec2(1,1),
-                ImGui::GetStyle().Colors[ImGuiCol_Button],
-                tint
-            )) {
-                if (can_buy || app_state.game_mode == AppState::GameMode::NORMAL) {
-                    app_state.current_pattern = selected ? "point" : name;
-                }
-            }
-            
-            // Dibujar costo en esquina inferior derecha
-            if (app_state.game_mode == AppState::GameMode::COMPETITION) {
-                ImDrawList* draw_list = ImGui::GetWindowDrawList();
-                char cost_str[16];
-                snprintf(cost_str, sizeof(cost_str), "%d", cost);
-                ImVec2 text_size = ImGui::CalcTextSize(cost_str);
-                
-                // Posición: esquina inferior derecha del botón
-                float padding = ImGui::GetStyle().FramePadding.x;
-                ImVec2 text_pos(
-                    btn_pos.x + button_size.x + padding * 2 - text_size.x - 4,
-                    btn_pos.y + button_size.y + padding * 2 - text_size.y - 2
-                );
-                
-                // Fondo semitransparente
-                draw_list->AddRectFilled(
-                    ImVec2(text_pos.x - 2, text_pos.y - 1),
-                    ImVec2(text_pos.x + text_size.x + 2, text_pos.y + text_size.y + 1),
-                    IM_COL32(0, 0, 0, 180),
-                    2.0f
-                );
-                
-                // Texto del costo
-                ImU32 cost_col = can_buy 
-                    ? IM_COL32(100, 255, 100, 255)
-                    : IM_COL32(255, 100, 100, 255);
-                draw_list->AddText(text_pos, cost_col, cost_str);
-            }
-            
-            // Tooltip
-            if (ImGui::IsItemHovered()) {
-                if (app_state.game_mode == AppState::GameMode::COMPETITION) {
-                    ImGui::SetTooltip("%s\nCosto: %d pts\n%s", 
-                                     tooltip, cost,
-                                     can_buy ? "✓ Disponible" : "✗ Sin puntos");
-                } else {
-                    ImGui::SetTooltip("%s", tooltip);
-                }
-            }
-            
-            ImGui::PopID();
-        };
 
-        auto anim_button = [&](const char* name, const char* tooltip, ImVec2 size = ImVec2(64, 64)) {
+        // Botón de patrón con PREVIEW NATIVO (render del propio autómata en vez
+        // de un GIF/PNG). `animate` para osciladores / naves / cañones.
+        const Uint32 now_ticks = SDL_GetTicks();
+        auto preview_button = [&](const char* name, const char* tooltip, bool animate) {
             ImGui::PushID(name);
-            
-            auto it = app_state.animations.find(name);
-            if (it == app_state.animations.end()) {
+            PatternPreview* pv = get_preview(name, animate);
+            SDL_Texture* tex = pv ? pv->texture(now_ticks) : nullptr;
+            if (!tex) {
                 ImGui::TextColored(ImVec4(1,0,0,1), "N/A");
                 ImGui::PopID();
                 return;
             }
-            
-            Animation& anim = it->second;
-            if (!anim.frames || anim.current_frame >= anim.frame_count) {
-                ImGui::PopID();
-                return;
-            }
-            
+            const ImVec2 img_size(static_cast<float>(pv->width()),
+                                  static_cast<float>(pv->height()));
+
             bool selected = (name == app_state.current_pattern);
             auto [cost, can_buy] = get_pattern_info(name);
-            
-            // Tinte si no se puede comprar
-            ImVec4 tint = (app_state.game_mode == AppState::GameMode::COMPETITION && !can_buy) 
-                          ? ImVec4(0.3f, 0.3f, 0.3f, 0.5f) 
+
+            ImVec4 tint = (app_state.game_mode == AppState::GameMode::COMPETITION && !can_buy)
+                          ? ImVec4(0.3f, 0.3f, 0.3f, 0.5f)
                           : (selected ? ImVec4(1,1,1,1) : ImVec4(0.7f, 0.7f, 0.7f, 0.8f));
-            
-            // Guardar posición antes del botón
+
             ImVec2 btn_pos = ImGui::GetCursorScreenPos();
-            
+
             if (ImGui::ImageButton(
-                name,
-                (ImTextureID)anim.frames[anim.current_frame],
-                size,
-                ImVec2(0,0), ImVec2(1,1),
-                ImGui::GetStyle().Colors[ImGuiCol_Button],
-                tint
-            )) {
+                    name, (ImTextureID)tex, img_size,
+                    ImVec2(0,0), ImVec2(1,1),
+                    ImGui::GetStyle().Colors[ImGuiCol_Button], tint)) {
                 if (can_buy || app_state.game_mode == AppState::GameMode::NORMAL) {
                     app_state.current_pattern = selected ? "point" : name;
                 }
             }
-            
-            // Dibujar costo en esquina inferior derecha
+
+            // Costo en esquina inferior derecha (modo competición)
             if (app_state.game_mode == AppState::GameMode::COMPETITION) {
                 ImDrawList* draw_list = ImGui::GetWindowDrawList();
                 char cost_str[16];
                 snprintf(cost_str, sizeof(cost_str), "%d", cost);
                 ImVec2 text_size = ImGui::CalcTextSize(cost_str);
-                
                 float padding = ImGui::GetStyle().FramePadding.x;
                 ImVec2 text_pos(
-                    btn_pos.x + size.x + padding * 2 - text_size.x - 4,
-                    btn_pos.y + size.y + padding * 2 - text_size.y - 2
-                );
-                
-                // Fondo semitransparente
+                    btn_pos.x + img_size.x + padding * 2 - text_size.x - 4,
+                    btn_pos.y + img_size.y + padding * 2 - text_size.y - 2);
                 draw_list->AddRectFilled(
                     ImVec2(text_pos.x - 2, text_pos.y - 1),
                     ImVec2(text_pos.x + text_size.x + 2, text_pos.y + text_size.y + 1),
-                    IM_COL32(0, 0, 0, 180),
-                    2.0f
-                );
-                
-                // Texto del costo
-                ImU32 cost_col = can_buy 
-                    ? IM_COL32(100, 255, 100, 255)
-                    : IM_COL32(255, 100, 100, 255);
+                    IM_COL32(0, 0, 0, 180), 2.0f);
+                ImU32 cost_col = can_buy ? IM_COL32(100,255,100,255)
+                                         : IM_COL32(255,100,100,255);
                 draw_list->AddText(text_pos, cost_col, cost_str);
             }
-            
-            // Tooltip
+
             if (ImGui::IsItemHovered()) {
                 if (app_state.game_mode == AppState::GameMode::COMPETITION) {
-                    ImGui::SetTooltip("%s\nCosto: %d pts\n%s", 
-                                     tooltip, cost,
-                                     can_buy ? "✓ Disponible" : "✗ Sin puntos");
+                    ImGui::SetTooltip("%s\nCosto: %d pts\n%s", tooltip, cost,
+                                      can_buy ? "✓ Disponible" : "✗ Sin puntos");
                 } else {
                     ImGui::SetTooltip("%s", tooltip);
                 }
             }
-            
+
             ImGui::PopID();
         };
 
@@ -809,50 +701,331 @@ bool loop() {
         ImGui::Separator();
 
         if (ImGui::TreeNode("Still Life")) {
-            pattern_button("block", "Block (2x2)");
+            preview_button("block", "Block (2x2)", false);
             ImGui::SameLine();
-            pattern_button("beehive", "Beehive");
+            preview_button("beehive", "Beehive", false);
             ImGui::SameLine();
-            pattern_button("boat", "Boat");
+            preview_button("boat", "Boat", false);
             ImGui::SameLine();
-            pattern_button("loaf", "Loaf");
+            preview_button("loaf", "Loaf", false);
             ImGui::SameLine();
-            pattern_button("flower", "Flower");
+            preview_button("flower", "Flower", false);
+            ImGui::SameLine();
+            preview_button("tub", "Tub", false);
+            ImGui::SameLine();
+            preview_button("pond", "Pond", false);
+            ImGui::SameLine();
+            preview_button("ship", "Ship", false);
             ImGui::TreePop();
         }
 
         if (ImGui::TreeNode("Oscillators")) {
-            anim_button("blinker", "Blinker");
+            preview_button("blinker", "Blinker", true);
             ImGui::SameLine();
-            anim_button("beacon", "Beacon");
+            preview_button("beacon", "Beacon", true);
             ImGui::SameLine();
-            anim_button("toad", "Toad");
+            preview_button("toad", "Toad", true);
             ImGui::SameLine();
-            anim_button("pulsar", "Pulsar");
+            preview_button("pulsar", "Pulsar", true);
+            ImGui::SameLine();
+            preview_button("pentadecathlon", "Pentadecathlon (período 15)", true);
             ImGui::TreePop();
         }
 
         if (ImGui::TreeNode("Spaceships")) {
-            anim_button("glider", "Glider");
+            preview_button("glider", "Glider", true);
             ImGui::SameLine();
-            anim_button("lwss", "Light Spaceship");
+            preview_button("lwss", "Light Spaceship", true);
             ImGui::SameLine();
-            anim_button("mwss", "Medium Spaceship");
+            preview_button("mwss", "Medium Spaceship", true);
             ImGui::SameLine();
-            anim_button("hwss", "Heavy Spaceship");
+            preview_button("hwss", "Heavy Spaceship", true);
             ImGui::TreePop();
         }
 
         if (ImGui::TreeNode("Guns")) {
-            anim_button("glider_gun", "Gosper Glider Gun", ImVec2(128, 64));
+            preview_button("glider_gun", "Gosper Glider Gun", true);
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Methuselahs")) {
+            preview_button("r_pentomino", "R-pentomino (~1103 gen)", true);
+            ImGui::SameLine();
+            preview_button("acorn", "Acorn (~5206 gen)", true);
+            ImGui::SameLine();
+            preview_button("diehard", "Diehard (desaparece en 130 gen)", true);
             ImGui::TreePop();
         }
 
         ImGui::End();
     }
 
+    // ============== AYUDA (?) ==============
+    if (app_state.showHelp) {
+        ImGui::SetNextWindowSize(ImVec2(440, 400), ImGuiCond_FirstUseEver);
+        ImGui::Begin("Ayuda (?)", &app_state.showHelp);
+
+        ImGui::TextWrapped("Juego de la Vida de Conway — guía rápida.");
+        ImGui::Separator();
+
+        if (ImGui::CollapsingHeader("Controles básicos", ImGuiTreeNodeFlags_DefaultOpen)) {
+            ImGui::BulletText("Click izquierdo: colocar el patrón seleccionado.");
+            ImGui::BulletText("Rueda del mouse: zoom hacia el cursor.");
+            ImGui::BulletText("Tecla A: avanzar un paso (útil en pausa).");
+            ImGui::BulletText("Tecla C: limpiar la grilla.");
+            ImGui::BulletText("Tecla R: resetear la vista (zoom/centro).");
+            ImGui::BulletText("Tecla M: mostrar/ocultar el minimapa.");
+            ImGui::BulletText("Teclas H / V: espejar el patrón horizontal / vertical.");
+            ImGui::BulletText("Teclas E / L: guardar / cargar la grilla (lastSave.txt).");
+        }
+        if (ImGui::CollapsingHeader("Estructuras")) {
+            ImGui::TextWrapped("En el panel 'Estructuras' elegís un patrón (still life, "
+                "oscilador, nave, cañón). Cada preview se renderiza con el propio "
+                "autómata del juego, no con imágenes externas.");
+        }
+        if (ImGui::CollapsingHeader("Parámetros")) {
+            ImGui::TextWrapped("Ajustá la frecuencia de simulación, pausá/reanudá y "
+                "elegí tu color de jugador desde el panel 'Parámetros'.");
+        }
+        if (ImGui::CollapsingHeader("Multiplayer")) {
+            ImGui::TextWrapped("Abrí 'Multiplayer', ingresá IP y puerto del servidor y "
+                "conectá; se guarda un historial de conexiones previas. En modo "
+                "competición gastás puntos de consumo al colocar patrones dentro de tu "
+                "zona de spawn.");
+        }
+        ImGui::Separator();
+        ImGui::TextDisabled("(Contenido preliminar — se ampliará.)");
+        ImGui::End();
+    }
+
+    // ============== WIKI ==============
+    if (app_state.showWiki) {
+        ImGui::SetNextWindowSize(ImVec2(660, 470), ImGuiCond_FirstUseEver);
+        ImGui::Begin("Wiki", &app_state.showWiki);
+
+        static int wiki_section = 0;
+        const char* sections[] = {
+            "Vecindarios", "Reglas y conceptos", "Entropía e información", "Catálogo"
+        };
+
+        ImGui::BeginChild("wiki_nav", ImVec2(150, 0), true);
+        for (int i = 0; i < IM_ARRAYSIZE(sections); ++i) {
+            if (ImGui::Selectable(sections[i], wiki_section == i)) wiki_section = i;
+        }
+        ImGui::EndChild();
+
+        ImGui::SameLine();
+        ImGui::BeginChild("wiki_content", ImVec2(0, 0), true);
+
+        const Uint32 wnow = SDL_GetTicks();
+
+        if (wiki_section == 0) {
+            ImGui::TextColored(ImVec4(0.8f, 0.9f, 1.0f, 1.0f), "Introducción a los Vecindarios");
+            ImGui::Separator();
+            ImGui::TextWrapped("El vecindario define qué celdas se consideran 'vecinas' de "
+                "una celda al aplicar las reglas. Los dos más comunes:");
+
+            // Diagrama de vecindario (3x3) dibujado con el draw list.
+            auto draw_neighborhood = [&](bool moore) {
+                const float cell = 24.0f;
+                ImVec2 p = ImGui::GetCursorScreenPos();
+                ImDrawList* dl = ImGui::GetWindowDrawList();
+                for (int r = 0; r < 3; ++r) {
+                    for (int c = 0; c < 3; ++c) {
+                        ImVec2 a(p.x + c * cell, p.y + r * cell);
+                        ImVec2 b(a.x + cell - 3, a.y + cell - 3);
+                        bool center = (r == 1 && c == 1);
+                        bool neigh = moore ? !center : ((r == 1) != (c == 1));
+                        ImU32 col = center ? IM_COL32(100, 255, 100, 255)
+                                   : (neigh ? IM_COL32(90, 120, 230, 255)
+                                            : IM_COL32(50, 50, 58, 255));
+                        dl->AddRectFilled(a, b, col, 2.0f);
+                    }
+                }
+                ImGui::Dummy(ImVec2(3 * cell, 3 * cell));
+            };
+
+            ImGui::Spacing();
+            ImGui::BeginGroup();
+            ImGui::Text("Moore (8 vecinos)");
+            draw_neighborhood(true);
+            ImGui::EndGroup();
+            ImGui::SameLine(0.0f, 40.0f);
+            ImGui::BeginGroup();
+            ImGui::Text("von Neumann (4 vecinos)");
+            draw_neighborhood(false);
+            ImGui::EndGroup();
+
+            ImGui::Spacing();
+            ImGui::TextWrapped("Moore incluye las 8 celdas que rodean a la central (es el "
+                "que usa el Juego de la Vida). von Neumann sólo incluye las 4 celdas "
+                "ortogonales. La elección del vecindario cambia drásticamente la dinámica.");
+        }
+        else if (wiki_section == 1) {
+            ImGui::TextColored(ImVec4(0.8f, 0.9f, 1.0f, 1.0f), "Reglas y conceptos");
+            ImGui::Separator();
+            ImGui::TextWrapped("Notación B/S: un autómata se describe por los conteos de "
+                "vecinos vivos que provocan Nacimiento (B) y Supervivencia (S). El Juego "
+                "de la Vida clásico es B3/S23: una celda muerta nace con exactamente 3 "
+                "vecinos; una viva sobrevive con 2 o 3, y en otro caso muere.");
+            ImGui::Spacing();
+            ImGui::BulletText("Modo NORMAL: B3/S23, heredando el color del jugador dominante.");
+            ImGui::TextWrapped("Modo COMPETITION: las celdas vivas cuentan aliados (+1) y "
+                "enemigos (-1); sobreviven con vecindario efectivo entre 2 y 3. Así, celdas "
+                "enemigas se debilitan mutuamente.");
+            ImGui::Spacing();
+            ImGui::TextDisabled("(El motor permite registrar reglas nuevas como Rulesets.)");
+        }
+        else if (wiki_section == 2) {
+            ImGui::TextColored(ImVec4(0.8f, 0.9f, 1.0f, 1.0f), "Entropía e información");
+            ImGui::Separator();
+            ImGui::TextWrapped("Algunas reglas tienden a homogeneizar el tablero: la "
+                "actividad decae hacia un estado uniforme, borrando la información de la "
+                "configuración inicial (alta 'difusión', baja entropía estructural).");
+            ImGui::Spacing();
+            ImGui::TextWrapped("Otras reglas —como B3/S23— mantienen estructuras complejas y "
+                "persistentes: coexisten regiones estables, oscilantes y caóticas que "
+                "conservan y transportan información local (naves, cañones, cables).");
+            ImGui::Spacing();
+            ImGui::TextWrapped("Medir cómo evoluciona la 'población' y la diversidad de "
+                "patrones da una intuición de cuánta información retiene una regla frente "
+                "a cuánto tiende al equilibrio homogéneo.");
+            ImGui::Spacing();
+            ImGui::TextDisabled("(Se podrán añadir demos comparando reglas homogeneizantes.)");
+        }
+        else {
+            ImGui::TextColored(ImVec4(0.8f, 0.9f, 1.0f, 1.0f), "Catálogo de patrones");
+            ImGui::Separator();
+
+            // `pattern`: patrón a mostrar/cargar (nullptr = sólo texto).
+            // `big`: ejemplo grande -> sin preview chico; se muestra cargándolo
+            //        en la grilla (guarda la grilla previa) para verlo a tamaño real.
+            struct WikiEntry { const char* title; const char* desc; const char* pattern; bool big; };
+            static const WikiEntry catalog[] = {
+                {"Still lifes",     "Patrones estables que no cambian entre generaciones.", "beehive", false},
+                {"Oscillators",     "Vuelven a su estado inicial tras un período fijo.", "pulsar", false},
+                {"Spaceships",      "Se trasladan por la grilla conservando su forma.", "glider", false},
+                {"Guns",            "Emiten naves periódicamente (p. ej. el cañón de Gosper).", "glider_gun", true},
+                {"Methuselahs",     "Patrones pequeños que evolucionan miles de generaciones antes de estabilizarse (Acorn).", "acorn", true},
+                {"Puffers",         "Naves que dejan un rastro de restos a su paso (puffer train).", "puffer", true},
+                {"Sawtooths",       "Poblaciones que crecen y colapsan sin cota superior. No entran en ninguna grilla finita (necesitan naves que viajan al infinito y vuelven).", nullptr, false},
+                {"Agars",           "Texturas periódicas que llenan el plano; aquí un spacefiller que va generando el agar.", "agar", true},
+                {"Wicks",           "Estructuras que 'arden' a lo largo de una línea (mecha diagonal).", "wick", true},
+                {"Conduits",        "Canales que transportan y redirigen naves; aquí un 'racetrack' que hace circular un glider en bucle.", "conduit", true},
+                {"Gardens of Eden", "Configuraciones sin predecesor posible. Su rasgo (no tener pasado) no se observa en la simulación, por eso va sólo como texto.", nullptr, false},
+            };
+
+            // Carga un ejemplo en la grilla actual (sólo un jugador): guarda la
+            // grilla previa, la limpia, coloca el patrón centrado y avisa.
+            auto load_example_into_grid = [&](const char* name) {
+                Board& b = app_state.automaton.board();
+                app_state.grid_backup.assign(b.data(), b.data() + b.size());
+                app_state.has_backup = true;
+
+                app_state.automaton.clear();
+
+                // Centrar la bounding box del patrón (dx -> col, dy -> fila).
+                int mindx = 0, maxdx = 0, mindy = 0, maxdy = 0; bool first = true;
+                for (const auto& [dx, dy] : get_pattern_cells(name)) {
+                    if (first) { mindx = maxdx = dx; mindy = maxdy = dy; first = false; }
+                    else {
+                        mindx = std::min(mindx, dx); maxdx = std::max(maxdx, dx);
+                        mindy = std::min(mindy, dy); maxdy = std::max(maxdy, dy);
+                    }
+                }
+                const int pw = maxdx - mindx + 1, ph = maxdy - mindy + 1;
+                const int row = app_state.rows / 2 - ph / 2 - mindy;
+                const int col = app_state.cols / 2 - pw / 2 - mindx;
+                app_state.automaton.add_pattern(name, row, col, app_state.player_id);
+                app_state.grid = app_state.automaton.grid();
+
+                // Ver el ejemplo completo: resetear la vista.
+                vp.zoom = 1.0f; vp.center_x = 0.5f; vp.center_y = 0.5f;
+
+                app_state.notify(std::string("Grilla previa guardada — ejemplo cargado: ") + name);
+            };
+
+            for (const auto& e : catalog) {
+                ImGui::PushID(e.title);
+                if (e.pattern && !e.big) {
+                    PatternPreview* pv = get_preview(e.pattern, true);
+                    if (pv) {
+                        ImGui::Image((ImTextureID)pv->texture(wnow),
+                                     ImVec2(static_cast<float>(pv->width()),
+                                            static_cast<float>(pv->height())));
+                        ImGui::SameLine();
+                    }
+                }
+                ImGui::BeginGroup();
+                ImGui::TextColored(ImVec4(0.85f, 0.95f, 1.0f, 1.0f), "%s", e.title);
+                ImGui::TextWrapped("%s", e.desc);
+                if (e.pattern) {
+                    const bool mp = app_state.multiplayer;
+                    if (mp) ImGui::BeginDisabled();
+                    if (ImGui::SmallButton("Cargar en la grilla")) {
+                        load_example_into_grid(e.pattern);
+                    }
+                    if (mp) {
+                        ImGui::EndDisabled();
+                        ImGui::SameLine();
+                        ImGui::TextDisabled("(sólo un jugador)");
+                    }
+                }
+                ImGui::EndGroup();
+                ImGui::Separator();
+                ImGui::PopID();
+            }
+            ImGui::TextDisabled("(Al cargar un ejemplo se guarda tu grilla anterior; podés restaurarla desde el aviso.)");
+        }
+
+        ImGui::EndChild();
+        ImGui::End();
+    }
+
+    // ============== NOTIFICACIÓN (toast) ==============
+    // Mini aviso abajo-centro (p. ej. "grilla previa guardada"), con opción de
+    // restaurar la grilla anterior. Se desvanece tras unos segundos.
+    if (app_state.notification_time != 0) {
+        const Uint32 age = SDL_GetTicks() - app_state.notification_time;
+        const Uint32 TOAST_MS = 6000;
+        if (age >= TOAST_MS) {
+            app_state.notification_time = 0;
+        } else {
+            float alpha = 1.0f;
+            if (age > TOAST_MS - 1000) alpha = (TOAST_MS - age) / 1000.0f;
+
+            ImGuiViewport* mv = ImGui::GetMainViewport();
+            ImVec2 pos(mv->WorkPos.x + mv->WorkSize.x * 0.5f,
+                       mv->WorkPos.y + mv->WorkSize.y - 55.0f);
+            ImGui::SetNextWindowPos(pos, ImGuiCond_Always, ImVec2(0.5f, 1.0f));
+            ImGui::SetNextWindowBgAlpha(0.85f * alpha);
+            ImGuiWindowFlags toast_flags =
+                ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
+                ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing |
+                ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMove;
+            if (ImGui::Begin("##toast", nullptr, toast_flags)) {
+                ImGui::TextUnformatted(app_state.notification_text.c_str());
+                if (app_state.has_backup && !app_state.multiplayer) {
+                    ImGui::SameLine();
+                    if (ImGui::SmallButton("Restaurar")) {
+                        Board& b = app_state.automaton.board();
+                        if (static_cast<int>(app_state.grid_backup.size()) == b.size()) {
+                            std::copy(app_state.grid_backup.begin(),
+                                      app_state.grid_backup.end(), b.data());
+                            app_state.automaton.mark_all_dirty();
+                            app_state.grid = app_state.automaton.grid();
+                        }
+                        app_state.has_backup = false;
+                        app_state.notify("Grilla anterior restaurada");
+                    }
+                }
+            }
+            ImGui::End();
+        }
+    }
+
     // ============== HUD SUPERIOR (info del jugador) ==============
-    if (app_state.showPlayerHUD && app_state.multiplayer && 
+    if (app_state.showPlayerHUD && app_state.multiplayer &&
         app_state.game_mode == AppState::GameMode::COMPETITION) {
         
         ImGuiWindowFlags hud_flags = 
@@ -1060,7 +1233,10 @@ void kill() {
     if (app_state.multiplayer) {
         disconnect(&app_state);
     }
-    
+
+    // Liberar las texturas de los previews ANTES de destruir el renderer.
+    g_previews.clear();
+
     ImGui_ImplSDLRenderer2_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();

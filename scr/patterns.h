@@ -4,6 +4,9 @@
 #include <string>
 #include <unordered_map>
 
+#include "rle.h"          // parse_rle
+#include "patterns_rle.h" // RLE_PUFFER, RLE_CONDUIT, RLE_AGAR, RLE_WICK
+
 /**
  * Enumeración de todos los patrones disponibles en el Juego de la Vida de Conway
  */
@@ -30,7 +33,26 @@ enum class Pattern : int {
     
     // Guns (Cañones)
     GLIDER_GUN,
-    
+
+    // Still Life (extra)
+    TUB,
+    POND,
+    SHIP,
+
+    // Oscillators (extra)
+    PENTADECATHLON,
+
+    // Methuselahs (evolucionan mucho antes de estabilizarse)
+    R_PENTOMINO,
+    ACORN,
+    DIEHARD,
+
+    // Patrones grandes importados de RLE (para la Wiki: "cargar en la grilla")
+    PUFFER,      // Puffer: deja rastro de restos
+    CONDUIT,     // Circuitería de señales (racetrack de glider)
+    AGAR,        // Spacefiller: llena el plano con un agar
+    WICK,        // Fuse/wick: "arde" a lo largo de una línea
+
     // Valor para contar cantidad de patrones
     PATTERN_COUNT
 };
@@ -178,7 +200,40 @@ private:
                 {21,2}, {21,3}, {21,4},
                 {22,1}, {22,5},
                 {24,0}, {24,1}, {24,5}, {24,6}
-            }, 100}
+            }, 100},
+
+            // ===== Still Life (extra) =====
+            {Pattern::TUB, "tub", "Tub",
+                {{1,0}, {0,1}, {2,1}, {1,2}}, 4},
+
+            {Pattern::POND, "pond", "Pond",
+                {{1,0}, {2,0}, {0,1}, {3,1}, {0,2}, {3,2}, {1,3}, {2,3}}, 8},
+
+            {Pattern::SHIP, "ship", "Ship",
+                {{0,0}, {1,0}, {0,1}, {2,1}, {1,2}, {2,2}}, 6},
+
+            // ===== Oscillators (extra) =====
+            {Pattern::PENTADECATHLON, "pentadecathlon", "Pentadecathlon", {
+                {2,0}, {7,0},
+                {0,1}, {1,1}, {3,1}, {4,1}, {5,1}, {6,1}, {8,1}, {9,1},
+                {2,2}, {7,2}
+            }, 40},
+
+            // ===== Methuselahs =====
+            {Pattern::R_PENTOMINO, "r_pentomino", "R-pentomino",
+                {{1,0}, {2,0}, {0,1}, {1,1}, {1,2}}, 25},
+
+            {Pattern::ACORN, "acorn", "Acorn",
+                {{1,0}, {3,1}, {0,2}, {1,2}, {4,2}, {5,2}, {6,2}}, 40},
+
+            {Pattern::DIEHARD, "diehard", "Diehard",
+                {{6,0}, {0,1}, {1,1}, {1,2}, {5,2}, {6,2}, {7,2}}, 30},
+
+            // ===== Patrones grandes (RLE importado) — para la Wiki =====
+            {Pattern::PUFFER,  "puffer",  "Puffer train",     parse_rle(RLE_PUFFER),  200},
+            {Pattern::CONDUIT, "conduit", "Glider racetrack", parse_rle(RLE_CONDUIT), 500},
+            {Pattern::AGAR,    "agar",    "Spacefiller (agar)", parse_rle(RLE_AGAR),  300},
+            {Pattern::WICK,    "wick",    "Diagonal fuse",    parse_rle(RLE_WICK),    150}
         };
     }
 

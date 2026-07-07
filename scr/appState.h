@@ -2,11 +2,15 @@
 
 #include <unordered_map>
 #include <string>
-#include <netinet/in.h>
+#include <vector>
+
+#include "net_compat.h"   // sockets portables (POSIX/Winsock) — antes que SDL
 
 #include <SDL2/SDL.h>
 
 #include "grid.h"
+#include "automaton.h"
+#include "connection_history.h"
 #include "packet_logger.h"
 
 // Forward declaration
@@ -86,7 +90,11 @@ struct AppState {
     std::unordered_map<std::string, SDL_Texture*> patterns;
     std::unordered_map<std::string, Animation> animations;
     
-    // ============== Grilla ==============
+    // ============== Grilla / Autómata ==============
+    // El autómata posee la grilla (Board) y el conjunto de reglas (Ruleset).
+    // `grid` es un alias ESTABLE a la grilla actual del autómata (CellValue**),
+    // para el código de render/patrones/IO heredado.
+    Automaton automaton;
     CellValue** grid;
     int rows, cols;
 
@@ -97,14 +105,25 @@ struct AppState {
     
     // ============== Multiplayer ==============
     bool multiplayer = false;
-    int client_socket = -1;
+    socket_t client_socket = NET_INVALID_SOCKET_VALUE;
     struct sockaddr_in server_addrs;
     std::string server_ip = "127.0.0.1";
     int server_port = 6969;
+
+    // Historial de conexiones previas (persistido en disco).
+    std::vector<ConnectionEntry> connection_history;
     
     // ID del jugador local (asignado por el servidor)
     CellValue player_id = 1;
-    
+
+    // ============== Sincronización lockstep + hash ==============
+    // El cliente avanza su propia grilla (mismo Automaton determinista) al
+    // recibir cada TICK, y verifica el hash contra el del servidor.
+    bool awaiting_resync = false;            // ignora TICKs hasta recibir FULL_GRID
+    std::string net_rx_buffer;               // acumulador (mensajes parciales entre recv)
+    int net_parse_mode = 0;                  // modo de parseo persistente entre recv()
+    unsigned long long net_full_gen = 0;     // generación del FULL_GRID en curso
+
     // Logger de paquetes
     PacketLogger* packet_logger = nullptr;
     
@@ -152,13 +171,28 @@ struct AppState {
     bool showNetworkStats = false;
     bool showScoreBar = true;  // Barra inferior con puntos
     bool showPlayerHUD = true; // HUD superior con info del jugador
+    bool showHelp = false;     // Panel de ayuda (?)
+    bool showWiki = false;     // Panel wiki (autómatas, vecindarios, etc.)
     
     // Espejado de patrones
     bool mirror_horizontal = false;
     bool mirror_vertical = false;
-    
+
     // Configuración del minimapa
     int minimap_size = 150;
+
+    // ============== Notificaciones (toast) + backup de grilla ==============
+    // Al cargar un "ejemplo" de la Wiki en la grilla se guarda la grilla previa
+    // aquí y se muestra una mini notificación (con opción de restaurar).
+    std::string notification_text;
+    Uint32 notification_time = 0;      // SDL_GetTicks() del último aviso (0 = ninguno)
+    std::vector<CellValue> grid_backup;
+    bool has_backup = false;
+
+    void notify(const std::string& msg) {
+        notification_text = msg;
+        notification_time = SDL_GetTicks();
+    }
     
     // ============== FPS ==============
     struct FPSCounter {
@@ -187,20 +221,21 @@ struct AppState {
     } fps;
 
     // ============== Constructores ==============
-    AppState(int initial_rows, int initial_cols) 
-        : rows{initial_rows}
+    AppState(int initial_rows, int initial_cols)
+        : automaton{initial_rows, initial_cols}
+        , grid{automaton.grid()}
+        , rows{initial_rows}
         , cols{initial_cols}
-        , grid{construct_grid(initial_rows, initial_cols)}
     {
         fps.reset();
     }
 
     ~AppState() {
-        destructor_grid(grid, rows, cols);
-        
+        // La grilla es propiedad del autómata (RAII); no se libera aquí.
+
         // Cerrar socket si está abierto
-        if (client_socket >= 0) {
-            close(client_socket);
+        if (client_socket != NET_INVALID_SOCKET_VALUE) {
+            net_close(client_socket);
         }
         
         // Liberar texturas

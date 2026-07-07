@@ -19,14 +19,12 @@
 #include <array>
 #include <chrono>
 
-#include <sstream> 
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <poll.h>
+#include <sstream>
+
+#include "net_compat.h"   // sockets portables (POSIX/Winsock) — antes que grid.h/SDL
 
 #include "grid.h"
+#include "automaton.h"
 #include "patterns.h"
 #include "packet_logger.h"
 
@@ -64,7 +62,7 @@ GameMode string_to_game_mode(const std::string& str) {
 
 struct PlayerState {
     int id = 0;
-    int socket_fd = -1;
+    socket_t socket_fd = NET_INVALID_SOCKET_VALUE;
     int victory_points = 0;
     int consumption_points = INITIAL_CONSUMPTION;
     int cells_alive = 0;
@@ -80,24 +78,27 @@ struct PlayerState {
 // ==================== ESTADO DEL SERVIDOR ====================
 
 struct ServerState {
-    // GRID
+    // GRID / AUTÓMATA
+    // El autómata posee la grilla y el ruleset. `current_grid` es un alias
+    // ESTABLE a la grilla actual del autómata (CellValue**) para el código
+    // existente (render, patrones, snapshot).
+    Automaton automaton;
     CellValue** current_grid;
-    CellValue** previous_grid;
     int rows, cols;
-    
-    // Simulation Parameters 
+
+    // Simulation Parameters
     bool run_sim = true;
     int frecuencia = 10;
     GameMode game_mode = GameMode::NORMAL;
     
     // Communication Parameters
-    int tcp_socket = 0;
+    socket_t tcp_socket = NET_INVALID_SOCKET_VALUE;
     struct sockaddr_in bind_addr;
     int server_port = 6969;
 
     // Múltiples clientes
-    std::vector<int> client_sockets;
-    std::vector<struct pollfd> poll_fds;
+    std::vector<socket_t> client_sockets;
+    std::vector<pollfd_t> poll_fds;
     
     // Estado de jugadores
     std::array<PlayerState, MAX_PLAYERS + 1> players;  // índice 0 no usado
@@ -110,11 +111,11 @@ struct ServerState {
     int error = 0;
     int enabled = 1;
 
-    ServerState(int initial_rows, int initial_cols) 
-    : rows{initial_rows},
-      cols{initial_cols},
-      current_grid{construct_grid(initial_rows, initial_cols)},
-      previous_grid{construct_grid(initial_rows, initial_cols)}
+    ServerState(int initial_rows, int initial_cols)
+    : automaton{initial_rows, initial_cols},
+      current_grid{automaton.grid()},
+      rows{initial_rows},
+      cols{initial_cols}
     {
         // Inicializar jugadores
         for (int i = 1; i <= MAX_PLAYERS; i++) {
@@ -124,42 +125,42 @@ struct ServerState {
         memset(&bind_addr, 0, sizeof(bind_addr));
         tcp_socket = socket(AF_INET, SOCK_STREAM, 0);
 
-        if (tcp_socket < 0) {
-            perror("socket() failed");
+        if (tcp_socket == NET_INVALID_SOCKET_VALUE) {
+            net_perror("socket() failed");
             error = 1;
             return;
         }
         if(DEBUG_INIT) printf("[INIT] Socket creation succeeded\n");
 
-        if (setsockopt(tcp_socket, SOL_SOCKET, SO_REUSEADDR, &enabled, sizeof(enabled)) == -1) {
-            perror("setsockopt() failed");
+        if (setsockopt(tcp_socket, SOL_SOCKET, SO_REUSEADDR, (const char*)&enabled, sizeof(enabled)) == -1) {
+            net_perror("setsockopt() failed");
             error = 1;
-            close(tcp_socket);
+            net_close(tcp_socket);
             return;
         }
-        
+
         bind_addr.sin_port = htons(server_port);
         bind_addr.sin_family = AF_INET;
         bind_addr.sin_addr.s_addr = INADDR_ANY;
 
         if (bind(tcp_socket, (const struct sockaddr *)&bind_addr, sizeof(bind_addr)) < 0) {
-            perror("bind() failed");
+            net_perror("bind() failed");
             error = 1;
-            close(tcp_socket);
+            net_close(tcp_socket);
             return;
         }
         if(DEBUG_INIT) printf("[INIT] Bind succeeded on port %d\n", server_port);
 
         if (listen(tcp_socket, SOMAXCONN) < 0) {
-            perror("listen() failed");
+            net_perror("listen() failed");
             error = 1;
-            close(tcp_socket);
+            net_close(tcp_socket);
             return;
         }
-        
-        fcntl(tcp_socket, F_SETFL, O_NONBLOCK);
-        
-        struct pollfd pfd;
+
+        net_set_nonblocking(tcp_socket);
+
+        pollfd_t pfd;
         pfd.fd = tcp_socket;
         pfd.events = POLLIN;
         pfd.revents = 0;
@@ -169,27 +170,32 @@ struct ServerState {
     }
 
     ~ServerState() {
-        for (int fd : client_sockets) {
-            close(fd);
+        for (socket_t fd : client_sockets) {
+            net_close(fd);
         }
-        if (tcp_socket > 0) close(tcp_socket);
-        destructor_grid(current_grid, rows, cols);
-        destructor_grid(previous_grid, rows, cols);
+        if (tcp_socket != NET_INVALID_SOCKET_VALUE) net_close(tcp_socket);
+        // current_grid es propiedad del autómata (RAII); no se libera aquí.
         if (logger) delete logger;
+    }
+
+    // Sincroniza el ruleset del autómata con el modo de juego actual.
+    void sync_ruleset() {
+        automaton.set_ruleset(game_mode == GameMode::COMPETITION
+                                  ? &RULE_COMPETITION : &RULE_NORMAL);
     }
 
     int client_count() const { return static_cast<int>(client_sockets.size()); }
     
-    void add_client(int fd) {
+    void add_client(socket_t fd) {
         if (client_count() >= MAX_CLIENTS) {
-            close(fd);
+            net_close(fd);
             return;
         }
-        
-        fcntl(fd, F_SETFL, O_NONBLOCK);
+
+        net_set_nonblocking(fd);
         client_sockets.push_back(fd);
-        
-        struct pollfd pfd;
+
+        pollfd_t pfd;
         pfd.fd = fd;
         pfd.events = POLLIN;
         pfd.revents = 0;
@@ -207,28 +213,28 @@ struct ServerState {
                   << "), total: " << client_count() << "\n";
     }
 
-    void remove_client(int fd) {
+    void remove_client(socket_t fd) {
         // Liberar player slot
         for (int i = 1; i <= MAX_PLAYERS; i++) {
             if (players[i].socket_fd == fd) {
                 players[i].connected = false;
-                players[i].socket_fd = -1;
+                players[i].socket_fd = NET_INVALID_SOCKET_VALUE;
                 break;
             }
         }
-        
+
         client_sockets.erase(
             std::remove(client_sockets.begin(), client_sockets.end(), fd),
             client_sockets.end()
         );
-        
+
         poll_fds.erase(
             std::remove_if(poll_fds.begin(), poll_fds.end(),
-                [fd](const struct pollfd& pfd) { return pfd.fd == fd; }),
+                [fd](const pollfd_t& pfd) { return pfd.fd == fd; }),
             poll_fds.end()
         );
-        
-        close(fd);
+
+        net_close(fd);
         std::cout << "[SERVER] Cliente desconectado, total: " << client_count() << "\n";
     }
     
@@ -239,7 +245,7 @@ struct ServerState {
         return 1;  // Fallback al primero
     }
     
-    int get_player_id(int socket_fd) {
+    int get_player_id(socket_t socket_fd) {
         for (int i = 1; i <= MAX_PLAYERS; i++) {
             if (players[i].socket_fd == socket_fd) return i;
         }
@@ -260,13 +266,8 @@ struct ServerState {
     }
     
     void reset_game() {
-        // Limpiar grilla
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                current_grid[i][j] = CELL_DEAD;
-                previous_grid[i][j] = CELL_DEAD;
-            }
-        }
+        // Limpiar grilla (autómata)
+        automaton.clear();
         // Reset jugadores
         for (int i = 1; i <= MAX_PLAYERS; i++) {
             if (players[i].connected) {
@@ -279,12 +280,12 @@ struct ServerState {
 
 // ==================== COMUNICACIÓN ====================
 
-void send_to_client(int client_fd, const std::string& msg) {
+void send_to_client(socket_t client_fd, const std::string& msg) {
     send(client_fd, msg.c_str(), msg.size(), MSG_NOSIGNAL);
 }
 
 void broadcast_to_all(ServerState& state, const std::string& msg) {
-    for (int fd : state.client_sockets) {
+    for (socket_t fd : state.client_sockets) {
         send_to_client(fd, msg);
     }
 }
@@ -333,133 +334,17 @@ void broadcast_all_player_states(ServerState& state) {
     broadcast_to_all(state, ss.str());
 }
 
+// Forward declarations (definidas en la sección BROADCAST GRILLA)
+void broadcast_tick(ServerState& state);
+void send_full_grid(ServerState& state, socket_t client_fd);
+void broadcast_full_grid(ServerState& state);
+
 // ==================== LÓGICA DE JUEGO ====================
 
-// Contar vecinos considerando modo de juego
-int count_neighbors_normal(CellValue** grid, int rows, int cols, int row, int col) {
-    int count = 0;
-    for (int i = -1; i <= 1; i++) {
-        for (int j = -1; j <= 1; j++) {
-            if (i == 0 && j == 0) continue;
-            int ni = row + i;
-            int nj = col + j;
-            if (ni >= 0 && ni < rows && nj >= 0 && nj < cols) {
-                if (grid[ni][nj] != CELL_DEAD) count++;
-            }
-        }
-    }
-    return count;
-}
-
-// En modo competición: vecinos del mismo jugador cuentan +1, enemigos -1
-int count_neighbors_competition(CellValue** grid, int rows, int cols, 
-                                 int row, int col, CellValue my_player) {
-    int count = 0;
-    for (int i = -1; i <= 1; i++) {
-        for (int j = -1; j <= 1; j++) {
-            if (i == 0 && j == 0) continue;
-            int ni = row + i;
-            int nj = col + j;
-            if (ni >= 0 && ni < rows && nj >= 0 && nj < cols) {
-                CellValue neighbor = grid[ni][nj];
-                if (neighbor != CELL_DEAD) {
-                    if (neighbor == my_player) {
-                        count++;  // Aliado: suma
-                    } else {
-                        count--;  // Enemigo: resta
-                    }
-                }
-            }
-        }
-    }
-    return count;
-}
-
-// Encontrar el jugador dominante entre los vecinos (para nacimiento)
-CellValue get_dominant_player(CellValue** grid, int rows, int cols, int row, int col) {
-    std::array<int, MAX_PLAYERS + 1> player_count = {0};
-    
-    for (int i = -1; i <= 1; i++) {
-        for (int j = -1; j <= 1; j++) {
-            if (i == 0 && j == 0) continue;
-            int ni = row + i;
-            int nj = col + j;
-            if (ni >= 0 && ni < rows && nj >= 0 && nj < cols) {
-                CellValue cell = grid[ni][nj];
-                if (cell > 0 && cell <= MAX_PLAYERS) {
-                    player_count[cell]++;
-                }
-            }
-        }
-    }
-    
-    int max_count = 0;
-    CellValue dominant = 1;
-    for (int i = 1; i <= MAX_PLAYERS; i++) {
-        if (player_count[i] > max_count) {
-            max_count = player_count[i];
-            dominant = static_cast<CellValue>(i);
-        }
-    }
-    return dominant;
-}
-
-void update_grid_with_mode(ServerState& state) {
-    static CellValue** temp_grid = nullptr;
-    if (!temp_grid) {
-        temp_grid = construct_grid(state.rows, state.cols);
-    }
-    
-    // Copiar grilla actual a temporal
-    for (int i = 0; i < state.rows; i++) {
-        for (int j = 0; j < state.cols; j++) {
-            temp_grid[i][j] = state.current_grid[i][j];
-        }
-    }
-    
-    // Aplicar reglas según modo
-    for (int i = 0; i < state.rows; i++) {
-        for (int j = 0; j < state.cols; j++) {
-            CellValue current = temp_grid[i][j];
-            
-            if (state.game_mode == GameMode::NORMAL) {
-                // Conway clásico
-                int neighbors = count_neighbors_normal(temp_grid, state.rows, state.cols, i, j);
-                
-                if (current != CELL_DEAD) {
-                    // Celda viva
-                    if (neighbors < 2 || neighbors > 3) {
-                        state.current_grid[i][j] = CELL_DEAD;
-                    }
-                } else {
-                    // Celda muerta
-                    if (neighbors == 3) {
-                        state.current_grid[i][j] = get_dominant_player(temp_grid, state.rows, state.cols, i, j);
-                    }
-                }
-            } else {
-                // Modo COMPETITION
-                if (current != CELL_DEAD) {
-                    // Celda viva: vecinos aliados suman, enemigos restan
-                    int effective_neighbors = count_neighbors_competition(
-                        temp_grid, state.rows, state.cols, i, j, current);
-                    
-                    // Necesita al menos 2 vecinos "efectivos" para sobrevivir
-                    // y no más de 3
-                    if (effective_neighbors < 2 || effective_neighbors > 3) {
-                        state.current_grid[i][j] = CELL_DEAD;
-                    }
-                } else {
-                    // Celda muerta: nace si tiene exactamente 3 vecinos
-                    int total_neighbors = count_neighbors_normal(temp_grid, state.rows, state.cols, i, j);
-                    if (total_neighbors == 3) {
-                        state.current_grid[i][j] = get_dominant_player(temp_grid, state.rows, state.cols, i, j);
-                    }
-                }
-            }
-        }
-    }
-}
+// Las reglas (NORMAL / COMPETITION) viven ahora en automaton.cpp como
+// instancias de Ruleset. El servidor avanza la simulación con
+// `state.automaton.step()`, compartiendo el MISMO código determinista que el
+// cliente (requisito para el lockstep + hash).
 
 void update_player_scores(ServerState& state) {
     // Resetear conteo de celdas
@@ -495,13 +380,13 @@ void update_player_scores(ServerState& state) {
 
 // ==================== COMANDOS ====================
 
-bool receive_command(int client_socket, ServerState& state) {
+bool receive_command(socket_t client_socket, ServerState& state) {
     char buffer[1024];
     
     int received = recv(client_socket, buffer, sizeof(buffer)-1, 0);
     
     if (received < 0) {
-        if (errno == EWOULDBLOCK || errno == EAGAIN) return true;
+        if (net_would_block()) return true;
         return false;
     }
     
@@ -598,18 +483,40 @@ bool receive_command(int client_socket, ServerState& state) {
                 state.players[player_id].consumption_points -= cost;
             }
             
-            // Colocar patrón transformado
+            // Colocar patrón transformado (y marcar su región como sucia para
+            // que el autómata la reevalúe en el próximo paso).
+            int min_y = state.rows, min_x = state.cols, max_y = -1, max_x = -1;
             for (const auto& [dx, dy] : transformed_cells) {
                 int x = col + dx;
                 int y = row + dy;
                 if (x >= 0 && x < state.cols && y >= 0 && y < state.rows) {
                     state.current_grid[y][x] = static_cast<CellValue>(player_id);
+                    min_y = std::min(min_y, y); max_y = std::max(max_y, y);
+                    min_x = std::min(min_x, x); max_x = std::max(max_x, x);
                 }
             }
-            
+            if (max_y >= 0) {
+                state.automaton.mark_region_dirty(min_y, min_x, max_y, max_x);
+            }
+
+            // Difundir el evento de patrón a TODOS los clientes para que lo
+            // apliquen en la MISMA generación (lockstep determinista). Todos
+            // reproducen la misma colocación vía load_pattern_into_grid.
+            {
+                std::stringstream ps;
+                ps << "PATTERN " << state.automaton.generation() << " "
+                   << pattern << " " << row << " " << col << " "
+                   << player_id << " " << mirror_h << " " << mirror_v << "\n";
+                std::string pmsg = ps.str();
+                if (state.logging_enabled && state.logger) {
+                    state.logger->log(PacketDirection::OUTGOING, pmsg.c_str(), pmsg.size());
+                }
+                broadcast_to_all(state, pmsg);
+            }
+
             if (DEBUG_RECV) {
-                std::cout << "[PATTERN] " << pattern << " at (" << row << "," << col 
-                          << ") by player " << player_id << " cost=" << cost 
+                std::cout << "[PATTERN] " << pattern << " at (" << row << "," << col
+                          << ") by player " << player_id << " cost=" << cost
                           << " mirror_h=" << mirror_h << " mirror_v=" << mirror_v << "\n";
             }
         }
@@ -640,9 +547,11 @@ bool receive_command(int client_socket, ServerState& state) {
     char mode_str[20];
     if (sscanf(buffer, "SET_MODE %19s", mode_str) == 1) {
         state.game_mode = string_to_game_mode(mode_str);
+        state.sync_ruleset();
         std::cout << "[CONFIG] Modo: " << game_mode_to_string(state.game_mode) << "\n";
         state.reset_game();
         broadcast_config(state);
+        broadcast_full_grid(state);
         return true;
     }
     
@@ -659,19 +568,23 @@ bool receive_command(int client_socket, ServerState& state) {
     
     // ========== STEP ==========
     if (strcmp(cmd, "STEP") == 0 && !state.run_sim) {
-        update_grid_with_mode(state);
+        state.automaton.step();
         update_player_scores(state);
+        broadcast_tick(state);  // avanzar a los clientes en lockstep
         std::cout << "[CONFIG] Step manual\n";
         return true;
     }
-    
+
+    // ========== GET_FULL_GRID (sync / resync) ==========
+    if (strcmp(cmd, "GET_FULL_GRID") == 0) {
+        send_full_grid(state, client_socket);
+        return true;
+    }
+
     // ========== CLEAR ==========
     if (strcmp(cmd, "CLEAR") == 0) {
-        for (int i = 0; i < state.rows; i++) {
-            for (int j = 0; j < state.cols; j++) {
-                state.current_grid[i][j] = CELL_DEAD;
-            }
-        }
+        state.automaton.clear();
+        broadcast_full_grid(state);  // resync inmediato
         std::cout << "[CONFIG] Grilla limpiada\n";
         return true;
     }
@@ -680,6 +593,7 @@ bool receive_command(int client_socket, ServerState& state) {
     if (strcmp(cmd, "RESET") == 0) {
         state.reset_game();
         broadcast_config(state);
+        broadcast_full_grid(state);
         return true;
     }
     
@@ -708,43 +622,57 @@ bool receive_command(int client_socket, ServerState& state) {
     return true;
 }
 
-// ==================== BROADCAST GRILLA ====================
+// ==================== BROADCAST GRILLA (lockstep + hash) ====================
 
-void broadcast_update(ServerState& state) {
+// Paquete ligero por tick: sólo la generación y el hash de la grilla del
+// servidor. El cliente avanza su propia grilla (mismo Automaton determinista) y
+// compara su hash; si difiere, pide una resincronización (GET_FULL_GRID).
+void broadcast_tick(ServerState& state) {
     if (state.client_sockets.empty()) return;
-    
+
     std::stringstream ss;
-    bool modified = false;
-    int changes_count = 0;
-    
+    ss << "TICK " << state.automaton.generation()
+       << " " << state.automaton.hash() << "\n";
+    std::string msg = ss.str();
+
+    if (DEBUG_SEND) {
+        std::cout << "[SEND] TICK gen=" << state.automaton.generation()
+                  << " -> " << state.client_count() << " clients\n";
+    }
+    if (state.logging_enabled && state.logger) {
+        state.logger->log(PacketDirection::OUTGOING, msg.c_str(), msg.size());
+    }
+
+    broadcast_to_all(state, msg);
+}
+
+// Snapshot completo de la grilla (sólo celdas vivas) + generación. Se envía al
+// unirse un cliente, al cambiar de modo/reset, y ante una desincronización.
+void send_full_grid(ServerState& state, socket_t client_fd) {
+    std::stringstream ss;
+    ss << "FULL_GRID " << state.automaton.generation() << "\n";
     for (int i = 0; i < state.rows; ++i) {
         for (int j = 0; j < state.cols; ++j) {
-            if (state.current_grid[i][j] != state.previous_grid[i][j]) {
-                if (!modified) {
-                    ss << "GRID_UPDATE\n";
-                    modified = true;
-                }
-                ss << i << " " << j << " " << static_cast<int>(state.current_grid[i][j]) << "\n";
-                changes_count++;
-                state.previous_grid[i][j] = state.current_grid[i][j];
+            const CellValue v = state.current_grid[i][j];
+            if (v != CELL_DEAD) {
+                ss << i << " " << j << " " << static_cast<int>(v) << "\n";
             }
         }
     }
-    
-    if (modified) {
-        ss << "END\n";
-        std::string update = ss.str();
-        
-        if (DEBUG_SEND) {
-            std::cout << "[SEND] " << changes_count << " changes -> " 
-                      << state.client_count() << " clients\n";
-        }
-        
-        if (state.logging_enabled && state.logger) {
-            state.logger->log(PacketDirection::OUTGOING, update.c_str(), update.size());
-        }
-        
-        broadcast_to_all(state, update);
+    ss << "END\n";
+    std::string msg = ss.str();
+
+    if (state.logging_enabled && state.logger) {
+        state.logger->log(PacketDirection::OUTGOING, msg.c_str(), msg.size());
+    }
+    send_to_client(client_fd, msg);
+}
+
+// Envía el snapshot completo a TODOS los clientes (tras CLEAR / RESET / cambio
+// de modo, donde la grilla cambia fuera del paso normal de simulación).
+void broadcast_full_grid(ServerState& state) {
+    for (socket_t fd : state.client_sockets) {
+        send_full_grid(state, fd);
     }
 }
 
@@ -752,11 +680,11 @@ void accept_new_client(ServerState& state) {
     struct sockaddr_in client_addr;
     socklen_t client_len = sizeof(client_addr);
     
-    int client_fd = accept(state.tcp_socket, (struct sockaddr*)&client_addr, &client_len);
-    
-    if (client_fd < 0) {
-        if (errno != EWOULDBLOCK && errno != EAGAIN) {
-            perror("accept() failed");
+    socket_t client_fd = accept(state.tcp_socket, (struct sockaddr*)&client_addr, &client_len);
+
+    if (client_fd == NET_INVALID_SOCKET_VALUE) {
+        if (!net_would_block()) {
+            net_perror("accept() failed");
         }
         return;
     }
@@ -798,6 +726,12 @@ void show_usage(const char* program) {
 }
 
 int main(int argc, char* argv[]) {
+    // Inicializar la pila de red (Winsock en Windows) antes de crear sockets.
+    if (net_init() != 0) {
+        std::cerr << "Error inicializando la red (Winsock)\n";
+        return 1;
+    }
+
     ServerState state(GRID_ROWS, GRID_COLS);
     bool verbose = false;
     
@@ -830,6 +764,9 @@ int main(int argc, char* argv[]) {
         std::cerr << "Error inicializando servidor\n";
         return 1;
     }
+
+    // Alinear el ruleset del autómata con el modo elegido por CLI.
+    state.sync_ruleset();
     
     std::cout << "\n=== Conway's Game of Life Server ===\n";
     std::cout << "Puerto: " << state.server_port << "\n";
@@ -843,11 +780,11 @@ int main(int argc, char* argv[]) {
     
     while (true) {
         // Poll con timeout corto
-        int ready = poll(state.poll_fds.data(), state.poll_fds.size(), 10);
-        
+        int ready = net_poll(state.poll_fds.data(), state.poll_fds.size(), 10);
+
         if (ready < 0) {
-            if (errno == EINTR) continue;
-            perror("poll() failed");
+            if (net_interrupted()) continue;
+            net_perror("net_poll() failed");
             break;
         }
         
@@ -873,11 +810,10 @@ int main(int argc, char* argv[]) {
             last_update = now;
             
             if (state.run_sim) {
-                update_grid_with_mode(state);
+                state.automaton.step();
                 update_player_scores(state);
+                broadcast_tick(state);  // paquete ligero: gen + hash
             }
-            
-            broadcast_update(state);
         }
         
         // Broadcast de scores cada segundo (modo competición)
@@ -898,12 +834,14 @@ int main(int argc, char* argv[]) {
                         broadcast_to_all(state, ss.str());
                         std::cout << "[GAME] ¡Jugador " << i << " gana!\n";
                         state.reset_game();
+                        broadcast_full_grid(state);
                         break;
                     }
                 }
             }
         }
     }
-    
+
+    net_cleanup();
     return 0;
 }

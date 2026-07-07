@@ -9,6 +9,7 @@
 
 #include "grid.h"
 #include "patterns.h"
+#include "automaton.h"
 
 using namespace std;
 
@@ -211,91 +212,25 @@ void load_pattern_into_grid(const std::string& pattern_name, CellValue** grid,
     }
 }
 
+// Avanza una generación de Conway clásico sobre una grilla `CellValue**` externa.
+// Delega en la MISMA regla que usan el cliente y el servidor (RULE_NORMAL), de
+// modo que existe una única fuente de verdad para las reglas. Lo usan las
+// herramientas independientes (wallpaper, ncurses_viewer); el cliente y el
+// servidor usan Automaton::step() directamente.
 void update_grid(CellValue** grid, int rows, int cols) {
-    // Matriz para contar vecinos
-    int** neighbors = new int*[rows];
-    for (int i = 0; i < rows; i++) {
-        neighbors[i] = new int[cols]();
-    }
+    Board b(rows, cols);
+    for (int i = 0; i < rows; i++)
+        for (int j = 0; j < cols; j++)
+            b.set(i, j, grid[i][j]);
 
-    // Contar vecinos para cada celda
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            int count = 0;
-            for (int di = -1; di <= 1; di++) {
-                for (int dj = -1; dj <= 1; dj++) {
-                    if (di == 0 && dj == 0) continue;
-                    int ni = i + di;
-                    int nj = j + dj;
-                    if (ni >= 0 && ni < rows && nj >= 0 && nj < cols) {
-                        if (grid[ni][nj] != CELL_DEAD) count++;
-                    }
-                }
-            }
-            neighbors[i][j] = count;
-        }
-    }
+    std::vector<CellValue> out(static_cast<size_t>(rows) * cols);
+    for (int i = 0; i < rows; i++)
+        for (int j = 0; j < cols; j++)
+            out[static_cast<size_t>(i) * cols + j] = RULE_NORMAL.step_cell(b, i, j);
 
-    // Nueva grilla
-    CellValue** new_grid = new CellValue*[rows];
-    for (int i = 0; i < rows; i++) {
-        new_grid[i] = new CellValue[cols];
-    }
-
-    // Aplicar reglas de Conway
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            if (grid[i][j] != CELL_DEAD) {
-                // Celda viva: sobrevive con 2 o 3 vecinos
-                new_grid[i][j] = (neighbors[i][j] == 2 || neighbors[i][j] == 3) 
-                                 ? grid[i][j] : CELL_DEAD;
-            } else {
-                // Celda muerta: nace con exactamente 3 vecinos
-                if (neighbors[i][j] == 3) {
-                    // Hereda el color del vecino más común
-                    int player_count[NUM_PLAYER_COLORS + 1] = {0};
-                    for (int di = -1; di <= 1; di++) {
-                        for (int dj = -1; dj <= 1; dj++) {
-                            if (di == 0 && dj == 0) continue;
-                            int ni = i + di;
-                            int nj = j + dj;
-                            if (ni >= 0 && ni < rows && nj >= 0 && nj < cols) {
-                                CellValue v = grid[ni][nj];
-                                if (v > 0 && v <= NUM_PLAYER_COLORS) {
-                                    player_count[v]++;
-                                }
-                            }
-                        }
-                    }
-                    // Encontrar el jugador con más celdas vecinas
-                    CellValue dominant = 1;
-                    int max_count = 0;
-                    for (int p = 1; p <= NUM_PLAYER_COLORS; p++) {
-                        if (player_count[p] > max_count) {
-                            max_count = player_count[p];
-                            dominant = p;
-                        }
-                    }
-                    new_grid[i][j] = dominant;
-                } else {
-                    new_grid[i][j] = CELL_DEAD;
-                }
-            }
-        }
-    }
-
-    // Copiar resultado
-    for (int i = 0; i < rows; i++) {
-        memcpy(grid[i], new_grid[i], cols * sizeof(CellValue));
-    }
-
-    // Liberar memoria
-    for (int i = 0; i < rows; i++) {
-        delete[] neighbors[i];
-        delete[] new_grid[i];
-    }
-    delete[] neighbors;
-    delete[] new_grid;
+    for (int i = 0; i < rows; i++)
+        for (int j = 0; j < cols; j++)
+            grid[i][j] = out[static_cast<size_t>(i) * cols + j];
 }
 
 // Rendering con zonas de spawn

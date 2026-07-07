@@ -8,11 +8,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(BUILD_TESTS "Build test programs" ON)
 option(BUILD_NCURSES_VIEWER "Build ncurses terminal viewer" ON)
 
-# Buscar paquetes SDL2
+# Hilos (Threads::Threads; en MinGW usa winpthreads, en Linux pthread).
+find_package(Threads REQUIRED)
+
+# Buscar SDL2 vía pkg-config con IMPORTED_TARGET (PkgConfig::SDL2*). Funciona en
+# Linux y en el cross MinGW (los dev packages SDL2-mingw traen .pc); propaga
+# includes, library dirs y flags (SDL2main, -mwindows) al target.
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(SDL2 REQUIRED sdl2)
-pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
-pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
+pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+pkg_check_modules(SDL2_TTF REQUIRED IMPORTED_TARGET SDL2_ttf)
+pkg_check_modules(SDL2_IMAGE REQUIRED IMPORTED_TARGET SDL2_image)
 
 # Buscar ncurses (opcional)
 if(BUILD_NCURSES_VIEWER)
@@ -68,8 +73,18 @@ target_include_directories(imgui PUBLIC
 # ============================================================================
 # Librería Graphics (componentes comunes con SDL2)
 # ============================================================================
-add_library(Graphics SHARED
+# En Windows se compila ESTÁTICA: así hay una sola copia de libstdc++ (linkeada
+# en cada .exe) y no hay que distribuir libGraphics.dll ni las DLL del compilador.
+if(WIN32)
+    set(GRAPHICS_LIB_TYPE STATIC)
+else()
+    set(GRAPHICS_LIB_TYPE SHARED)
+endif()
+
+add_library(Graphics ${GRAPHICS_LIB_TYPE}
     scr/grid.cpp
+    scr/automaton.cpp
+    scr/rle.cpp
     scr/dotted_line.cpp
     scr/main_menu.cpp
 )
@@ -82,17 +97,24 @@ target_include_directories(Graphics PUBLIC
 )
 
 target_link_libraries(Graphics
-    ${SDL2_LIBRARIES}
-    ${SDL2_TTF_LIBRARIES}
-    ${SDL2_IMAGE_LIBRARIES}
+    PkgConfig::SDL2
+    PkgConfig::SDL2_TTF
+    PkgConfig::SDL2_IMAGE
     imgui
 )
+
+# La lib compartida no debe redirigir main() a SDL_main (no tiene main).
+if(WIN32)
+    target_compile_definitions(Graphics PRIVATE SDL_MAIN_HANDLED)
+endif()
 
 # ============================================================================
 # Ejecutable principal: Cliente gráfico SDL2
 # ============================================================================
 add_executable(life_game
     scr/main.cpp
+    scr/pattern_preview.cpp
+    scr/connection_history.cpp
 )
 
 target_include_directories(life_game PUBLIC
@@ -106,10 +128,17 @@ target_include_directories(life_game PUBLIC
 target_link_libraries(life_game
     imgui
     Graphics
-    ${SDL2_LIBRARIES}
-    ${SDL2_TTF_LIBRARIES}
-    ${SDL2_IMAGE_LIBRARIES}
+    PkgConfig::SDL2
+    PkgConfig::SDL2_TTF
+    PkgConfig::SDL2_IMAGE
+    Threads::Threads
 )
+
+if(WIN32)
+    # App gráfica: SDL2main provee WinMain; subsistema Windows (sin consola).
+    target_link_libraries(life_game ws2_32)
+    set_target_properties(life_game PROPERTIES WIN32_EXECUTABLE ON)
+endif()
 
 # ============================================================================
 # Servidor (con logging y patterns con enum)
@@ -126,14 +155,22 @@ target_include_directories(conway_server PUBLIC
 
 target_link_libraries(conway_server
     Graphics
-    pthread
+    Threads::Threads
 )
-# Visor ncurses (terminal)
+if(WIN32)
+    # Servidor de consola: no redirigir main() a SDL_main y linkear Winsock.
+    target_compile_definitions(conway_server PRIVATE SDL_MAIN_HANDLED)
+    target_link_libraries(conway_server ws2_32)
+endif()
+
+# Visor ncurses (terminal) — sólo Linux (ncurses + sockets POSIX).
 # ============================================================================
-if(BUILD_NCURSES_VIEWER)
+if(BUILD_NCURSES_VIEWER AND NOT WIN32)
     add_executable(ncurses_viewer
         scr/ncurses_viewer.cpp
         scr/grid.cpp
+        scr/automaton.cpp
+        scr/rle.cpp
     )
     target_include_directories(ncurses_viewer PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/includes
@@ -143,10 +180,10 @@ if(BUILD_NCURSES_VIEWER)
     )
     target_link_libraries(ncurses_viewer
         ${CURSES_LIBRARIES}
-        ${SDL2_LIBRARIES}
-        pthread
+        PkgConfig::SDL2
+        Threads::Threads
     )
-    
+
     message(STATUS "ncurses_viewer will be built")
 endif()
 
@@ -155,27 +192,48 @@ endif()
 # ============================================================================
 if(BUILD_TESTS AND GTest_FOUND)
     enable_testing()
-    
-    add_executable(test_server
-        tests/test_server.cpp
+    include(GoogleTest)
+
+    # Tests unitarios del motor (Board/Automaton) — multiplataforma, sin sockets.
+    add_executable(test_automaton
+        tests/test_automaton.cpp
     )
 
-    target_include_directories(test_server PUBLIC
+    target_include_directories(test_automaton PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/includes
         ${CMAKE_CURRENT_SOURCE_DIR}/scr
+        ${SDL2_INCLUDE_DIRS}
     )
 
-    target_link_libraries(test_server
+    target_link_libraries(test_automaton
+        Graphics
         GTest::gtest
         GTest::gtest_main
         GTest::gmock
-        pthread
+        Threads::Threads
     )
-    
-    # Registrar tests con CTest
-    include(GoogleTest)
-    gtest_discover_tests(test_server)
-    
+    gtest_discover_tests(test_automaton)
+
+    # Tests de integración del servidor — usan sockets POSIX (sólo Linux).
+    if(NOT WIN32)
+        add_executable(test_server
+            tests/test_server.cpp
+        )
+        target_include_directories(test_server PUBLIC
+            ${CMAKE_CURRENT_SOURCE_DIR}/includes
+            ${CMAKE_CURRENT_SOURCE_DIR}/scr
+            ${SDL2_INCLUDE_DIRS}
+        )
+        target_link_libraries(test_server
+            Graphics          # Board/Automaton para el cliente de referencia lockstep
+            GTest::gtest
+            GTest::gtest_main
+            GTest::gmock
+            Threads::Threads
+        )
+        gtest_discover_tests(test_server)
+    endif()
+
     message(STATUS "Tests will be built with Google Test")
 endif()
 
@@ -207,29 +265,31 @@ message(STATUS "")
 
 
 # ============================================================================
-# Wallpaper Mode v3 (renderiza directo a X11 root window)
-# Agregar después de life_game en CMakeLists.txt
+# Wallpaper Mode v3 (renderiza directo a X11 root window) — sólo Linux (X11).
 # ============================================================================
- 
-find_package(X11 REQUIRED)
- 
-add_executable(life_wallpaper
-    scr/wallpaper.cpp
-    scr/grid.cpp
-)
- 
-target_include_directories(life_wallpaper PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/includes
-    ${CMAKE_CURRENT_SOURCE_DIR}/scr
-    ${SDL2_INCLUDE_DIRS}
-    ${X11_INCLUDE_DIR}
-)
- 
-target_link_libraries(life_wallpaper
-    ${SDL2_LIBRARIES}
-    ${X11_LIBRARIES}
-)
- 
+if(NOT WIN32)
+    find_package(X11 REQUIRED)
+
+    add_executable(life_wallpaper
+        scr/wallpaper.cpp
+        scr/grid.cpp
+        scr/automaton.cpp
+        scr/rle.cpp
+    )
+
+    target_include_directories(life_wallpaper PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/includes
+        ${CMAKE_CURRENT_SOURCE_DIR}/scr
+        ${SDL2_INCLUDE_DIRS}
+        ${X11_INCLUDE_DIR}
+    )
+
+    target_link_libraries(life_wallpaper
+        PkgConfig::SDL2
+        ${X11_LIBRARIES}
+    )
+endif()
+
 # Características:
 # - Renderiza directamente en la root window de X11
 # - Funciona con cualquier window manager

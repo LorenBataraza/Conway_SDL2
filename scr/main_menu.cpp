@@ -20,6 +20,10 @@ static void ShowExampleAppMainMenuBar(AppState* app_state){
         ImGui::MenuItem("Parámetros", NULL, &app_state->showParameters);
         ImGui::SameLine();
         ImGui::MenuItem("Multiplayer", NULL, &app_state->showMultiplayerConf);
+        ImGui::SameLine();
+        ImGui::MenuItem("Wiki", NULL, &app_state->showWiki);
+        ImGui::SameLine();
+        ImGui::MenuItem("Ayuda (?)", NULL, &app_state->showHelp);
 
         ImGui::EndMainMenuBar();
     }

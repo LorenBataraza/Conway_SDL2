@@ -15,6 +15,10 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+// Motor (para el cliente de referencia que valida el lockstep)
+#include "board.h"
+#include "automaton.h"
+
 /**
  * Tests del servidor del Juego de la Vida usando Google Test
  */
@@ -284,56 +288,56 @@ TEST_F(PatternTest, SendMalformedMessage) {
 // Tests de Formato de Respuesta
 // ============================================================================
 
-TEST_F(PatternTest, GridUpdateFormat) {
-    // Enviar patrón para generar actualización
+TEST_F(PatternTest, TickFormat) {
+    // El servidor emite un TICK ligero (gen + hash) por paso, en lockstep.
     ASSERT_TRUE(conn->send_message("ADD_PATTERN glider 50 50"));
-    wait_for_processing(100);
-    
+    wait_for_processing(150);
+
     std::string response = conn->receive_message();
-    
-    // Puede que no haya respuesta si no hubo cambios
     if (!response.empty()) {
-        EXPECT_THAT(response, ::testing::HasSubstr("GRID_UPDATE"))
-            << "Respuesta no contiene GRID_UPDATE";
-        EXPECT_THAT(response, ::testing::HasSubstr("END"))
-            << "Respuesta no contiene END";
+        EXPECT_THAT(response, ::testing::HasSubstr("TICK"))
+            << "Respuesta no contiene TICK. Recibido: " << response;
     }
 }
 
-TEST_F(PatternTest, GridUpdateDataLines) {
+TEST_F(PatternTest, TickHasGenAndHash) {
     ASSERT_TRUE(conn->send_message("ADD_PATTERN glider 50 50"));
-    wait_for_processing(100);
-    
+    wait_for_processing(150);
+
     std::string response = conn->receive_message();
-    
     if (!response.empty()) {
         std::stringstream ss(response);
         std::string line;
-        int data_lines = 0;
-        bool in_update = false;
-        
+        bool found_valid_tick = false;
+
         while (std::getline(ss, line)) {
-            if (line == "GRID_UPDATE") {
-                in_update = true;
-                continue;
-            }
-            if (line == "END") {
+            unsigned long long gen = 0, hash = 0;
+            if (sscanf(line.c_str(), "TICK %llu %llu", &gen, &hash) == 2) {
+                found_valid_tick = true;
                 break;
             }
-            if (in_update && !line.empty()) {
-                data_lines++;
-                
-                // Verificar formato: debe tener al menos 2 números
-                int row, col;
-                int parsed = sscanf(line.c_str(), "%d %d", &row, &col);
-                EXPECT_GE(parsed, 2) 
-                    << "Línea de datos mal formateada: " << line;
-            }
         }
-        
-        // Glider tiene 5 celdas
-        EXPECT_GE(data_lines, 1) << "No se recibieron datos de celdas";
+        EXPECT_TRUE(found_valid_tick)
+            << "No se recibió un TICK válido. Recibido: " << response;
     }
+}
+
+TEST_F(PatternTest, FullGridSnapshotOnRequest) {
+    // GET_FULL_GRID debe devolver un snapshot completo (sync/resync).
+    ASSERT_TRUE(conn->send_message("ADD_PATTERN block 60 60"));
+    wait_for_processing(100);
+    conn->receive_message();  // drenar TICKs pendientes
+
+    ASSERT_TRUE(conn->send_message("GET_FULL_GRID"));
+    wait_for_processing(100);
+
+    std::string response = conn->receive_message();
+    // El stream contiene TICKs y/o el bloque FULL_GRID.
+    EXPECT_THAT(response, ::testing::AnyOf(
+        ::testing::HasSubstr("FULL_GRID"),
+        ::testing::HasSubstr("TICK")))
+        << "No se recibió FULL_GRID ni TICK. Recibido: " << response;
+    EXPECT_TRUE(conn->is_connected());
 }
 
 // ============================================================================
@@ -506,6 +510,96 @@ TEST_F(PatternTest, ExtraWhitespace) {
     EXPECT_TRUE(conn->send_message("ADD_PATTERN    glider    10    10"));
     wait_for_processing();
     EXPECT_TRUE(conn->is_connected());
+}
+
+// ============================================================================
+// Tests de Lockstep + Hash
+// ============================================================================
+
+// Cliente de REFERENCIA: reproduce el protocolo lockstep (FULL_GRID / PATTERN /
+// TICK) con el mismo Automaton determinista y verifica que su hash local
+// coincide con el hash que anuncia el servidor en cada TICK.
+TEST_F(ServerTest, LockstepReferenceClientStaysInSync) {
+    ASSERT_TRUE(conn->connect()) << conn->get_last_error();
+
+    // Sync inicial + algo de actividad (el cañón genera gliders continuamente).
+    // Nota: el servidor procesa un comando por recv(), así que espaciamos los
+    // envíos para que no se fusionen en un mismo segmento TCP (como ocurre en el
+    // uso real, donde los comandos vienen de acciones del usuario).
+    ASSERT_TRUE(conn->send_message("GET_FULL_GRID"));
+    wait_for_processing(100);
+    ASSERT_TRUE(conn->send_message("ADD_PATTERN glider_gun 5 5 1 0 0"));
+
+    Automaton local(200, 400, &RULE_NORMAL);
+    bool awaiting = true;    // ignora TICKs hasta el FULL_GRID
+    bool synced = false;
+    int parse_mode = 0;      // 0=none, 4=FULL_GRID
+    unsigned long long full_gen = 0;
+    int ticks_ok = 0, ticks_bad = 0;
+
+    auto process_line = [&](const std::string& line) {
+        if (line.rfind("FULL_GRID ", 0) == 0) {
+            sscanf(line.c_str(), "FULL_GRID %llu", &full_gen);
+            local.clear();
+            parse_mode = 4;
+            return;
+        }
+        if (line == "END") {
+            if (parse_mode == 4) {
+                local.set_generation(full_gen);
+                local.mark_all_dirty();
+                awaiting = false;
+                synced = true;
+            }
+            parse_mode = 0;
+            return;
+        }
+        if (line.rfind("TICK ", 0) == 0) {
+            unsigned long long gen = 0, h = 0;
+            if (sscanf(line.c_str(), "TICK %llu %llu", &gen, &h) == 2 && !awaiting) {
+                if (gen == local.generation() + 1) {
+                    local.step();
+                    if (local.hash() == h) ticks_ok++; else ticks_bad++;
+                }
+            }
+            return;
+        }
+        if (line.rfind("PATTERN ", 0) == 0) {
+            unsigned long long ag = 0; char name[64]; int r, c, p, mh, mv;
+            if (sscanf(line.c_str(), "PATTERN %llu %63s %d %d %d %d %d",
+                       &ag, name, &r, &c, &p, &mh, &mv) == 7 && !awaiting) {
+                if (ag == local.generation())
+                    local.add_pattern(name, r, c, static_cast<CellValue>(p), mh != 0, mv != 0);
+            }
+            return;
+        }
+        if (parse_mode == 4) {
+            int r, c, v;
+            if (sscanf(line.c_str(), "%d %d %d", &r, &c, &v) == 3)
+                local.board().set(r, c, static_cast<CellValue>(v));
+        }
+    };
+
+    // Seguir el stream durante ~1.5 s.
+    std::string acc;
+    auto start = std::chrono::steady_clock::now();
+    while (std::chrono::duration_cast<std::chrono::milliseconds>(
+               std::chrono::steady_clock::now() - start).count() < 1500) {
+        std::string chunk = conn->receive_message();
+        if (chunk.empty()) continue;
+        acc += chunk;
+        size_t pos;
+        while ((pos = acc.find('\n')) != std::string::npos) {
+            process_line(acc.substr(0, pos));
+            acc.erase(0, pos + 1);
+        }
+    }
+
+    EXPECT_TRUE(synced) << "No se recibió el FULL_GRID inicial";
+    EXPECT_GT(ticks_ok, 0) << "No se validó ningún TICK";
+    EXPECT_EQ(ticks_bad, 0)
+        << "El cliente de referencia se desincronizó del servidor ("
+        << ticks_ok << " ok, " << ticks_bad << " fallidos)";
 }
 
 // ============================================================================
